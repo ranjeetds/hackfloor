@@ -35,7 +35,11 @@ mkdocs build --strict                # if you changed docs/ (needs the docs extr
 ```
 
 If you change terminal output or the card, regenerate the README images with
-`python scripts/render_readme_assets.py` and commit the updated SVGs.
+`python scripts/render_readme_assets.py` and commit the updated PNGs. The script needs
+`playwright` with Chromium (`pip install playwright && playwright install chromium`) and,
+for the hero image, `pip install "hackfloor[reasoning-gym]"`. The images use a neutral
+palette (white or near-black, greys, one indigo accent, muted red for failures, no green);
+the hex values are in the script's docstring.
 
 ## Project layout
 

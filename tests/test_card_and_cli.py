@@ -98,3 +98,20 @@ def test_probes_and_version_commands(capsys):
     assert main(["probes"]) == 0
     assert "HF-CONFTEST" in capsys.readouterr().out
     assert main(["version"]) == 0
+
+
+@pytest.mark.parametrize("name", ["vulnerable_math", "fixed_math"])
+def test_terminal_output_uses_no_green_or_teal(fixtures, tmp_path, name):
+    import re
+
+    from rich.console import Console
+
+    console = Console(force_terminal=True, color_system="standard", width=100)
+    with console.capture() as capture:
+        main(
+            ["scan", str(fixtures / "rlvr" / name), "--out", str(tmp_path / "c.json")],
+            console=console,
+        )
+    codes = {c for seq in re.findall(r"\x1b\[([0-9;]*)m", capture.get()) for c in seq.split(";")}
+    # 32/92 green, 36/96 cyan, 42/102 and 46/106 their backgrounds
+    assert not codes & {"32", "92", "36", "96", "42", "102", "46", "106"}

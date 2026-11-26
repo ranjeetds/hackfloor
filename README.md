@@ -1,23 +1,25 @@
+<h1 align="center"><img src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/logo.svg" alt="" width="40" height="40" style="vertical-align: bottom;"> hackfloor</h1>
+
+<p align="center">Check that your RL reward function or benchmark grader can't be fooled.</p>
+
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-light.svg">
-    <img alt="hackfloor: check that your reward function can't be fooled" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-light.svg" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/hero-dark.png">
+    <img alt="hackfloor scan of reasoning-gym 0.1.25 game_of_life_halting: five probes marked critical, verdict VULNERABLE" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/hero-light.png" width="800">
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ranjeetds/hackfloor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ranjeetds/hackfloor/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://pypi.org/project/hackfloor/"><img alt="PyPI" src="https://img.shields.io/pypi/v/hackfloor"></a>
-  <img alt="Python 3.10 to 3.13" src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776ab">
-  <a href="https://github.com/ranjeetds/hackfloor/blob/main/LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+  <a href="https://pypi.org/project/hackfloor/"><img alt="PyPI" src="https://img.shields.io/pypi/v/hackfloor?style=for-the-badge&color=3730A3&labelColor=24292F"></a>
+  <a href="https://github.com/ranjeetds/hackfloor/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/ranjeetds/hackfloor/ci.yml?style=for-the-badge&label=CI&color=3730A3&labelColor=24292F"></a>
+  <a href="https://ranjeetds.github.io/hackfloor/"><img alt="Documentation" src="https://img.shields.io/badge/docs-read-3730A3?style=for-the-badge&labelColor=24292F"></a>
 </p>
 
-**hackfloor checks whether your RL reward function or benchmark grader can be fooled by answers that don't solve the task.**
+## About
 
-It tries cheap, well-known hacks against your grader and reports which ones were rewarded. Think of it as a unit test for your grader.
+**hackfloor checks whether your RL reward function or benchmark grader can be fooled by answers that don't solve the task.** It tries cheap, well-known hacks against your grader and reports which ones were rewarded. Think of it as a unit test for your grader.
 
-[Docs](https://ranjeetds.github.io/hackfloor/) · [Quickstart](#quickstart) · [What it checks](#what-it-checks) · [Concepts](https://ranjeetds.github.io/hackfloor/concepts/) · [PyPI](https://pypi.org/project/hackfloor/)
+The picture above is a real scan of `game_of_life_halting` from reasoning-gym 0.1.25: the grader accepted any non-empty answer, including the wrong one, on 100 of 100 tasks. [More on that below](#on-a-real-project).
 
 ## The problem
 
@@ -43,7 +45,7 @@ The same thing happens with test-based graders. These hacks are all known and ch
 
 hackfloor runs these and eight more against your real grader. Each hack runs next to a harmless **control** (an attempt that is the same except for the hack). If the hack scores clearly higher than the control, that is a **finding**.
 
-## Install
+## Installation
 
 ```bash
 pip install hackfloor
@@ -114,6 +116,19 @@ The gold template shows what a correct completion looks like. Probes use it for 
 Network and timing probes need container isolation and are planned. The full list with controls is in [Probes](https://ranjeetds.github.io/hackfloor/probes/); the exact statistics are in [Statistics](https://ranjeetds.github.io/hackfloor/statistics/).
 
 A clean scan does not prove a grader is unhackable. It means the known cheap hacks failed. hackfloor runs verifiers as local subprocesses, which is not a security boundary, so scan only environments you would run on your own machine.
+
+## Integrity card
+
+Every scan also writes a JSON integrity card with each number behind the verdict. These are the cards for the bundled vulnerable and fixed pytest tasks (`fixtures/tasks/vulnerable_pytest` and `fixtures/tasks/fixed_pytest`):
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/integrity-card-dark.png">
+    <img alt="Integrity cards for the vulnerable and fixed pytest fixtures: six probes critical and level L0 before the fix, all probes resisted and level L1 after" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/integrity-card-light.png" width="800">
+  </picture>
+</p>
+
+The levels and check ids are explained in [Integrity card](https://ranjeetds.github.io/hackfloor/integrity-card/).
 
 ## On a real project
 

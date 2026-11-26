@@ -5,25 +5,23 @@ hide:
 
 # hackfloor
 
-<p align="center">
-  <img src="assets/banner-light.svg#only-light" alt="hackfloor" width="720">
-  <img src="assets/banner-dark.svg#only-dark" alt="hackfloor" width="720">
-</p>
-
 **hackfloor checks whether your RL reward function or benchmark grader can be fooled by
 answers that don't solve the task.** It tries cheap, well-known reward hacks against your
 grader, each next to a harmless control, and reports which ones were rewarded. Think of it
 as a unit test for your grader.
+
+<p align="center">
+  <img src="assets/hero-light.png#only-light" alt="A hackfloor scan of reasoning-gym 0.1.25 game_of_life_halting: five probes marked critical, verdict VULNERABLE" width="800">
+  <img src="assets/hero-dark.png#only-dark" alt="A hackfloor scan of reasoning-gym 0.1.25 game_of_life_halting: five probes marked critical, verdict VULNERABLE" width="800">
+</p>
+
+The scan above is real: reasoning-gym 0.1.25 accepted any non-empty answer, including the wrong one, for `game_of_life_halting`. See [the results](results/reasoning-gym.md). To try a scan that needs no extra install, use the bundled fixture:
 
 ```bash
 pip install hackfloor
 git clone --depth 1 https://github.com/ranjeetds/hackfloor.git && cd hackfloor
 hackfloor scan fixtures/rlvr/vulnerable_math
 ```
-
-<p align="center">
-  <img src="assets/scan-rlvr.svg" alt="A scan of a vulnerable math reward" width="760">
-</p>
 
 | Page | What it covers |
 |---|---|

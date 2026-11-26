@@ -41,9 +41,10 @@ exit code.
 ## Pictures
 
 <p align="center">
-  <img src="assets/scan-vulnerable.svg#only-light" alt="Scan of the vulnerable pytest fixture" width="760">
+  <img src="assets/scan-vulnerable-light.png#only-light" alt="Scan of the vulnerable pytest fixture" width="760">
+  <img src="assets/scan-vulnerable-dark.png#only-dark" alt="Scan of the vulnerable pytest fixture" width="760">
 </p>
 <p align="center">
-  <img src="assets/integrity-card-light.svg#only-light" alt="Integrity cards for the vulnerable and fixed pytest fixtures" width="760">
-  <img src="assets/integrity-card-dark.svg#only-dark" alt="Integrity cards for the vulnerable and fixed pytest fixtures" width="760">
+  <img src="assets/integrity-card-light.png#only-light" alt="Integrity cards for the vulnerable and fixed pytest fixtures" width="760">
+  <img src="assets/integrity-card-dark.png#only-dark" alt="Integrity cards for the vulnerable and fixed pytest fixtures" width="760">
 </p>
