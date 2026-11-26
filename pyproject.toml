@@ -32,6 +32,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.21"]
+reasoning-gym = ["reasoning-gym>=0.1.25"]
+verifiers = ["verifiers>=0.4.1,<0.5; python_version >= '3.11'"]
+openenv = ["openenv>=0.15"]
+integrations = ["hackfloor[reasoning-gym,verifiers,openenv]"]
 
 [project.urls]
 Homepage = "https://github.com/ranjeetds/hackfloor"
