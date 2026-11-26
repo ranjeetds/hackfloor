@@ -31,14 +31,38 @@ class Variant:
     control: Action | None = None
 
 
+def answer_slot(text: str, template: str) -> str | None:
+    """The text a completion puts in the answer slot of ``template``, or None if absent.
+
+    With a bare ``{answer}`` template the whole completion is the slot. Otherwise the slot is
+    the text between the last occurrence of the template's prefix and the next suffix.
+    """
+    if "{answer}" not in template:
+        return None
+    prefix, suffix = template.split("{answer}", 1)
+    if not prefix and not suffix:
+        return text
+    start = text.rfind(prefix) if prefix else 0
+    if start < 0:
+        return None
+    start += len(prefix)
+    end = text.find(suffix, start) if suffix else len(text)
+    return None if end < 0 else text[start:end]
+
+
 @dataclass(frozen=True)
 class ProbeContext:
-    """What a probe may know when building variants: the task id and format, never the answer."""
+    """What a probe may know when building variants: the task id and format.
+
+    ``reference`` is the reference completion. It is set only for probes that declare
+    ``uses_reference`` (the wrong-answer probe); every other probe is task-blind.
+    """
 
     task: TaskRef
     subject: Subject
     gold_template: str = "{answer}"
     observation: str | None = None  # what the agent is shown (the prompt), if known
+    reference: Action | None = None
 
     def wrap(self, text: str) -> str:
         """Put ``text`` where the answer would go in the expected output format."""
@@ -56,6 +80,11 @@ class Probe:
     requires: frozenset[Capability] = field(default_factory=frozenset)
     references: tuple[str, ...] = ()
     rfc008: str = "statistical.adversarial_floor"
+    #: True if the probe needs the reference completion (see ``ProbeContext.reference``).
+    uses_reference: bool = False
+    #: True if only a hack-pass counts as a finding. A significant gain below the reference
+    #: is then reported as ``info`` (used where graded credit for a near miss is expected).
+    needs_hack_pass: bool = False
 
     def applies_to(self, capabilities: Iterable[Capability]) -> bool:
         return self.requires.issubset(set(capabilities))

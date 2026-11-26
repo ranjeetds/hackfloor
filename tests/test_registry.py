@@ -22,6 +22,7 @@ BUILTIN_IDS = {
     "HF-JUDGE",
     "HF-ANSWERKEY",
     "HF-GITLEAK",
+    "HF-WRONG",
 }
 
 

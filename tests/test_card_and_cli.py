@@ -20,7 +20,8 @@ def test_card_validates_against_schema(fixtures, name):
     assert checks["semantic.oracle_max"]["status"] == "PASS"
     assert checks["semantic.floor_gap"]["status"] == "PASS"
     assert checks["semantic.no_solution_leakage"]["status"] == "PASS"
-    assert checks["semantic.canary_floor"]["status"] == "NOT_MEASURED"
+    assert checks["semantic.canary_floor"]["status"] == "PASS"
+    assert checks["semantic.canary_floor"]["probes_run"] == ["HF-WRONG"]
     expected = "FAIL" if name == "vulnerable_math" else "PASS"
     assert checks["statistical.adversarial_floor"]["status"] == expected
     gap = checks["statistical.gameability_gap"]

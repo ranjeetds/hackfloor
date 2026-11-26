@@ -31,7 +31,7 @@ hackfloor-specific id.
 | `semantic.no_solution_leakage` | no leak probe reaches a reference solution, and the reference answer is not visible in the prompt; `NOT_MEASURED` when there is nothing to check |
 | `runtime.reward_well_formed` | every reward is finite and inside the declared range, and no grader call failed |
 | `runtime.oracle_containment` | partial: only the reward-file write probe; `SKIP` when it does not apply |
-| `semantic.canary_floor` | `NOT_MEASURED` |
+| `semantic.canary_floor` | `HF-WRONG`: a generated wrong answer in the right format never reaches the reference score (graded credit for a near miss is allowed and listed as `INFO`); `NOT_MEASURED` when it has nothing to edit. Author-written canaries are not read yet |
 | `runtime.network_policy`, `runtime.host_containment`, `runtime.resource_bounds`, `runtime.episode_isolation` | `NOT_MEASURED` (need container isolation or multi-episode runs) |
 
 `statistical.adversarial_floor` and `statistical.gameability_gap` are in the lane RFC 008

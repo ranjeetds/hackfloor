@@ -1,0 +1,10 @@
+[subject]
+kind = "rlvr"
+name = "vulnerable_halting"
+reward = "reward.py:reward"
+data = "data.jsonl"
+gold_template = "<answer>{answer}</answer>"
+
+[reward]
+min = 0.0
+max = 1.0

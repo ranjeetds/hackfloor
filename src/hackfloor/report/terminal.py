@@ -115,7 +115,7 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
                 Text.assemble(
                     ("  ↳ ", "dim"),
                     (f"{p['id']:<14}", "bold red"),
-                    (f"{ev['variant']:<22}", ""),
+                    (f"{ev['variant']:<22} ", ""),
                     ("scored ", "dim"),
                     (f"{ev['exploit_reward']:.2f}", "bold red"),
                     ("  control ", "dim"),

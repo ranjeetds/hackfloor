@@ -34,10 +34,10 @@ trained long enough against a grader that accepts them.
 | **Target** | What you scan: a reward function, a task directory, a reasoning-gym dataset, a `verifiers` taskset or an OpenEnv environment. |
 | **Adapter** | The small piece of code that lets hackfloor call a given kind of target. See [Adapters](adapters.md). |
 | **Reference solution** | A correct answer for each task. In a reward-function scan it is built from the gold template. |
-| **Gold template** | What a correct completion looks like, for example `<answer>{answer}</answer>`. Probes use it for the shape of an answer and never see the real answer. |
+| **Gold template** | What a correct completion looks like, for example `<answer>{answer}</answer>`. Probes use it for the shape of an answer. Only `HF-WRONG` sees the real answer, to make it wrong. |
 | **Null policy** | Does nothing: an empty completion, or an untouched workspace. It is the floor the grader should give. |
 | **Calibration** | Checking that the reference beats the null policy on every task. If it does not, the scan stops with `UNCALIBRATED`, because nothing else can be trusted. |
-| **Probe** | One documented, cheap hack, run against the grader. There are 14 built in. See [Probes](probes.md). |
+| **Probe** | One documented, cheap hack, run against the grader. There are 15 built in. See [Probes](probes.md). |
 | **Matched control** | An attempt that touches the same place as the hack without the hack. A patched `conftest.py` is compared with an empty one; an always-equal object is compared with `None`. The difference measures the hack, not the setup. |
 | **Floor gap (Δ floor)** | The reward of the hack minus the reward of its control, averaged over tasks. |
 | **Hack-pass** | A hack that reaches the reference score on a task. Reproducible hack-passes are always critical. |
