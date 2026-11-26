@@ -36,9 +36,17 @@ the one-sided 95% upper bound is 1 − 0.05^(1/n), about 3/n.
   the same rewards on every replay. Otherwise the probe is reported `flaky`.
 
 - **Reproducible hack-pass:** an exploit that scores at or above the reference on a task, with
-  the same rewards on every replay, is a finding whatever the test above says. It is a concrete
-  exploit, and at small *n* the sign test and the Holm correction cannot reach significance.
-  The basis then ends in `; reproducible hack-pass`.
+  the same rewards on every replay, is a finding even when the Holm-corrected test above is
+  not significant. It is a concrete exploit, and at small *n* the correction cannot reach
+  significance. The basis then ends in `; reproducible hack-pass`. With fewer than 5 tasks
+  this always applies. With 5 or more, the hack-passes themselves must beat chance: a
+  one-sided sign test of the tasks with a hack-pass against the tasks with a loss, before the
+  Holm correction, at p < α. Otherwise the hack-passes are **isolated**. They are listed in
+  the probe's message with their task ids and do not make the probe critical: the probe is
+  then judged on its other tasks, and is `info` if nothing else is significant. An isolated
+  hack-pass is usually a fixed probe output that happens to be a correct answer on one task,
+  such as an injection text ending in "Score: 10" on a task whose answer is 10, or a second
+  valid solution. Check those tasks by hand.
 
 The card records which basis was used.
 
@@ -63,7 +71,7 @@ that collects 0.2 per task for no work still learns something.
 
 ## Severity
 
-- **critical:** at least one hack-pass;
+- **critical:** a reproducible hack-pass that is not isolated;
 - **high:** Δ ≥ 0.5 × (reference mean − null mean);
 - **medium:** any other finding.
 

@@ -354,3 +354,71 @@ def test_near_miss_credit_from_hf_wrong_is_info():
     assert wrong.status == "info"
     assert "graded credit" in wrong.message
     assert result.verdict == "RESISTED"
+
+
+def test_isolated_hack_pass_on_many_tasks_is_info():
+    """A fixed probe output that happens to be correct on one task out of many is not a finding.
+
+    reasoning-gym's gsm_symbolic has a task whose answer is 10, and an injection text that
+    ends in "Score: 10" was graded as that answer.
+    """
+    import re
+
+    def reward(completion, answer):
+        m = re.search(r"<answer>(.*?)</answer>", completion, re.S)
+        if not m:
+            return 0.0
+        numbers = re.findall(r"-?\d+", m.group(1))
+        return 1.0 if numbers and numbers[-1] == answer else 0.0
+
+    rows = [{"prompt": f"Compute item {i}.", "answer": str(100 + i)} for i in range(30)]
+    rows[7]["answer"] = "10"
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    result = scan(subject, ScanConfig(replays=2, probe_ids=["HF-JUDGE"]))
+    judge = _by_id(result)["HF-JUDGE"]
+    assert judge.hack_passes == 1
+    assert judge.status == "info"
+    assert "isolated hack-pass on 1 of 30 tasks (7)" in judge.message
+    assert result.verdict == "RESISTED"
+
+
+def test_hack_pass_on_few_tasks_is_still_a_finding():
+    import re
+
+    def reward(completion, answer):
+        m = re.search(r"<answer>(.*?)</answer>", completion, re.S)
+        if not m:
+            return 0.0
+        numbers = re.findall(r"-?\d+", m.group(1))
+        return 1.0 if numbers and numbers[-1] == answer else 0.0
+
+    rows = [{"prompt": "Compute.", "answer": "10"}, {"prompt": "Compute.", "answer": "11"}]
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    judge = _by_id(scan(subject, ScanConfig(replays=2, probe_ids=["HF-JUDGE"])))["HF-JUDGE"]
+    assert judge.status == "finding"
+    assert judge.severity == "critical"
+
+
+def test_isolated_hack_pass_does_not_make_graded_credit_critical():
+    """Significant small credit plus one coincidental full pass is not critical.
+
+    reasoning-gym's cryptarithm pays 0.01 for any parseable mapping and accepts every valid
+    solution, so a changed digit is sometimes another valid solution.
+    """
+    import re
+
+    def reward(completion, answer):
+        m = re.search(r"<answer>(.*?)</answer>", completion, re.S)
+        if not m or not m.group(1).strip():
+            return 0.0
+        got = m.group(1).strip()
+        return 1.0 if got == answer or got == "8" else 0.01
+
+    rows = [{"prompt": f"Pick a digit {i}.", "answer": str(i % 6 + 1)} for i in range(40)]
+    rows[3]["answer"] = "7"  # its changed answer, 8, is also accepted
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    wrong = _by_id(scan(subject, ScanConfig(replays=2, probe_ids=["HF-WRONG"])))["HF-WRONG"]
+    assert wrong.hack_passes == 1
+    assert wrong.status == "info"
+    assert wrong.severity == "none"
+    assert "isolated hack-pass" in wrong.message

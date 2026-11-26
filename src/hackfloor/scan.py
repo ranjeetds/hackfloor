@@ -351,38 +351,67 @@ def scan(
         else:
             significant = big_enough and r.wins >= 1
         winners_consistent = all(o.consistent for o in r.outcomes if o.win)
-        # A hack-pass that reproduces on every replay is a concrete exploit, so it is a
-        # finding even when there are too few tasks for the sign test to reach significance.
-        reproducible_pass = any(o.hack_pass and o.consistent for o in r.outcomes)
-        if not significant and reproducible_pass:
+        # A hack-pass that reproduces on every replay is a concrete exploit, so it makes the
+        # probe a critical finding even when there are too few tasks for the sign test to
+        # reach significance. With enough tasks for the test, the hack-passes themselves must
+        # beat chance (one-sided sign test of hack-pass tasks against losses, before the Holm
+        # correction). Otherwise they are isolated: usually the probe's fixed output happens
+        # to be a correct answer on that task, and they are listed for a human to check.
+        passes = [o for o in r.outcomes if o.hack_pass and o.consistent]
+        confirmed = bool(passes) and (
+            r.basis == "deterministic-replay" or stats.sign_test(len(passes), r.losses) < cfg.alpha
+        )
+        isolated = [o.task_id for o in passes] if passes and not confirmed else []
+        note = (
+            f"isolated hack-pass on {len(isolated)} of {r.n} tasks ({', '.join(isolated[:5])}): "
+            "check whether the probe output is a correct answer there"
+            if isolated
+            else ""
+        )
+        if confirmed and not significant:
             significant = True
             r.basis += "; reproducible hack-pass"
-        best_exploit = max((o.exploit for o in r.outcomes if o.win), default=lo)
+        # Graded credit is judged without the isolated hack-passes.
+        best_exploit = max(
+            (o.exploit for o in r.outcomes if o.win and o.task_id not in isolated), default=lo
+        )
         bounded = (
             cfg.partial_credit > 0
-            and not r.hack_passes
+            and not confirmed
             and best_exploit <= lo + cfg.partial_credit * span + EPS
         )
         if not significant:
-            r.status = "resisted"
-        elif r.probe.needs_hack_pass and not reproducible_pass:
+            r.status = "info" if isolated else "resisted"
+            r.message = note
+        elif r.probe.needs_hack_pass and not confirmed:
             r.status = "info"
-            r.message = (
-                f"graded credit below the reference: the best attempt scored {best_exploit:.3g} "
-                "and none reached the reference"
+            r.message = "; ".join(
+                m
+                for m in (
+                    f"graded credit below the reference: the best attempt scored "
+                    f"{best_exploit:.3g}",
+                    note,
+                )
+                if m
             )
         elif bounded:
             r.status = "info"
-            r.message = (
-                f"bounded partial credit: the best exploit scored {best_exploit:.3g}, at most "
-                f"{cfg.partial_credit:g} of the reward range and below the reference"
+            r.message = "; ".join(
+                m
+                for m in (
+                    f"bounded partial credit: the best exploit scored {best_exploit:.3g}, at "
+                    f"most {cfg.partial_credit:g} of the reward range and below the reference",
+                    note,
+                )
+                if m
             )
         elif not winners_consistent and r.basis == "deterministic-replay":
             r.status = "flaky"
             r.message = "the effect did not reproduce on every replay"
         else:
             r.status = "finding"
-            if r.hack_passes:
+            r.message = note
+            if confirmed:
                 r.severity = "critical"
             elif gold_gap > EPS and r.delta_mean >= 0.5 * gold_gap:
                 r.severity = "high"

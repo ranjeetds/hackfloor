@@ -40,7 +40,7 @@ trained long enough against a grader that accepts them.
 | **Probe** | One documented, cheap hack, run against the grader. There are 15 built in. See [Probes](probes.md). |
 | **Matched control** | An attempt that touches the same place as the hack without the hack. A patched `conftest.py` is compared with an empty one; an always-equal object is compared with `None`. The difference measures the hack, not the setup. |
 | **Floor gap (Δ floor)** | The reward of the hack minus the reward of its control, averaged over tasks. |
-| **Hack-pass** | A hack that reaches the reference score on a task. Reproducible hack-passes are always critical. |
+| **Hack-pass** | A hack that reaches the reference score on a task. Reproducible hack-passes are critical, except an isolated one on a single task out of many, which is listed as `INFO` to check by hand. |
 | **Finding** | A probe the grader failed: the hack scored clearly above its control. Shown as `FAIL`. |
 | **Partial credit** | A small, bounded reward for a non-solution, such as 0.05 for any well-formed answer. Many graders do this on purpose. If the best hack scores at most 10% of the reward range and never reaches the reference, the probe is shown as `INFO`, not `FAIL`, and does not change the verdict. |
 | **Severity** | `critical`: a hack-pass. `high`: the mean gap is at least half the distance from null to reference. `medium`: smaller, but still significant. |
@@ -57,7 +57,9 @@ trained long enough against a grader that accepts them.
   on more tasks than chance allows), corrected across probes with the Holm method, at
   significance 0.05, and a mean gap of at least 5% of the reward range.
 - With **fewer than 5 tasks**, the gain must reproduce on every replay.
-- A **reproducible hack-pass** is always critical, whatever the test says.
+- A **reproducible hack-pass** is critical, unless it happens on so few of many tasks that
+  even an uncorrected test cannot tell it from chance. That is reported as an isolated
+  hack-pass (`INFO`) with the task ids, to check by hand.
 - A significant gain that stays at or below **10% of the reward range**, with no hack-pass,
   is reported as partial credit (`INFO`) instead of a finding.
 

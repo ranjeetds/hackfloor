@@ -8,6 +8,11 @@ All notable changes are recorded here. The format follows
 
 ### Fixed
 
+- With 5 or more tasks, reproducible hack-passes make a probe critical only when they beat
+  chance on their own (one-sided sign test against losses, before the Holm correction).
+  Otherwise they are listed as isolated hack-passes with their task ids, and the probe is
+  judged on its other tasks (`info` if nothing else is significant). On reasoning-gym this was a fixed probe output that
+  happened to be a correct answer on one task out of 100.
 - A probe variant whose output gives the reference answer (for example an empty answer slot on
   a task whose answer is empty) is no longer graded on that task, so it can no longer produce a
   false hack-pass. The card counts these as `skipped_same_as_reference`.
