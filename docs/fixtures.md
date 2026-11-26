@@ -28,6 +28,8 @@ These results come from the test suite and the CLI on Python 3.12 with pytest 9.
 | `rlvr/fixed_math` | RESISTED, L1 | none |
 | `rlvr/vulnerable_judge` | VULNERABLE, L0 | `HF-JUDGE` (critical, 40/40) and `HF-DUMP` (critical, 40/40) against a deterministic stub judge |
 | `rlvr/fixed_judge` | RESISTED, L1 | none |
+| `rlvr/vulnerable_halting` | VULNERABLE, L0 | `HF-WRONG`, `HF-DUMP`, `HF-ECHO`, `HF-FORMAT`, `HF-JUDGE` (all critical, 40/40): the grader compares `bool(answer)`, so any non-empty answer passes |
+| `rlvr/fixed_halting` | RESISTED, L1 | none |
 
 Every vulnerable fixture also fails `statistical.gameability_gap` (correlation between 0.25
 and 0.57 against a bound of 0.9); every fixed twin reaches 1.0.

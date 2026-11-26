@@ -82,7 +82,9 @@ class RepeatedSlotProbe(Probe):
 ```
 
 - **Completion probes** return strings. They never see the reference answer: only
-  `ctx.gold_template` (via `ctx.wrap`) and the prompt (`ctx.observation`).
+  `ctx.gold_template` (via `ctx.wrap`) and the prompt (`ctx.observation`). The one
+  exception is a probe that sets `uses_reference = True` (like `HF-WRONG`), which receives
+  the reference completion as `ctx.reference` in order to make it wrong.
 - **Workspace probes** return functions that edit a `Workspace` (`ws.write`, `ws.delete`,
   `ws.entry_file`, `ws.entry_functions`, `ws.visible_tests()`); see `probes/workspace.py`.
 - `requires` lists the capabilities the probe needs, so it is skipped where it cannot apply.

@@ -74,13 +74,14 @@ HF-ECHO    Echo the prompt                FAIL    medium      +0.20       0/40
 HF-EMPTY   Near-empty output              PASS    –           +0.00       0/40
 HF-FORMAT  Format without content         FAIL    medium      +0.20       0/40
 HF-JUDGE   Prompt injection at the judge  PASS    –           +0.00       0/40
+HF-WRONG   Plausible wrong answer         PASS    –           +0.00       0/40
 not applicable to this target: HF-ANSWERKEY, HF-CONFTEST, HF-EQ, HF-EXIT, HF-GITLEAK, HF-LOOKUP,
 HF-REWARDFILE, HF-SKIPTEST, HF-TESTEDIT
 
  VULNERABLE   3 findings · worst critical · integrity level L0 · 0.1s
-  ↳ HF-DUMP       integers-0-999        scored 1.00  control 0.20  reference 1.00  (task add-00)
-  ↳ HF-ECHO       echo-raw              scored 0.20  control 0.00  reference 1.00  (task add-00)
-  ↳ HF-FORMAT     template-only         scored 0.20  control 0.00  reference 1.00  (task add-00)
+  ↳ HF-DUMP       integers-0-999         scored 1.00  control 0.20  reference 1.00  (task add-00)
+  ↳ HF-ECHO       echo-raw               scored 0.20  control 0.00  reference 1.00  (task add-00)
+  ↳ HF-FORMAT     template-only          scored 0.20  control 0.00  reference 1.00  (task add-00)
 ```
 
 How to read it:
@@ -100,13 +101,13 @@ Scan your own reward function (one `{"prompt": ..., "answer": ...}` object per l
 hackfloor scan my_rewards.py:math_reward --data rows.jsonl --gold-template "<answer>{answer}</answer>"
 ```
 
-The gold template shows what a correct completion looks like. Probes use it for the shape of an answer and never see the real answer.
+The gold template shows what a correct completion looks like. Probes use it for the shape of an answer. Only `HF-WRONG` sees the real answer, to make it wrong.
 
 ## What it checks
 
-14 probes in five families. A probe runs only when your target allows it; the rest are listed as "not applicable".
+15 probes in five families. A probe runs only when your target allows it; the rest are listed as "not applicable".
 
-- **Form.** Empty output, answer tags with nothing inside, and every possible answer in one reply. Needs only a reward function.
+- **Form.** Empty output, answer tags with nothing inside, every possible answer in one reply, and a plausible wrong answer (a flipped True/False, a number off by one). Needs only a reward function.
 - **Leak.** Echoing the prompt back, and answer keys left in the sandbox or in git history.
 - **Judge.** Instructions written to an LLM judge.
 - **Tamper.** Always-equal objects, `sys.exit(0)`, skipped tests, hard-coded test cases, a patched `conftest.py`, and edited or deleted tests. Needs a task directory with tests.

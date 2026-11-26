@@ -19,7 +19,7 @@ CARD_VERSION = "0.1"
 #: reward-integrity and containment criteria hackfloor does not measure yet. They are
 #: listed so a card never implies coverage it does not have.
 NOT_YET_MEASURED = {
-    "semantic.canary_floor": "export of probes as OpenEnv canaries is planned",
+    "semantic.canary_floor": "HF-WRONG did not run: no reference answer it can make wrong",
     "runtime.network_policy": "needs container isolation (planned for v0.3)",
     "runtime.host_containment": "needs container isolation (planned for v0.3)",
     "runtime.resource_bounds": "needs container isolation (planned for v0.3)",
@@ -185,6 +185,20 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
         status = {"finding": "FAIL", "resisted": "PASS"}.get(p.status, "SKIP")
         checks["runtime.oracle_containment"] = _check(
             status, scope="reward-file write only (partial)", probe=p.probe.id
+        )
+    canaries = [
+        p
+        for p in result.probes
+        if p.probe.rfc008 == "semantic.canary_floor" and p.status not in ("not_applicable", "error")
+    ]
+    if canaries:
+        checks["semantic.canary_floor"] = _check(
+            "FAIL" if any(p.status == "finding" for p in canaries) else "PASS",
+            scope="generated wrong answers (flipped boolean, number off by one, next option "
+            "letter) against an empty answer in the same format",
+            probes_run=[p.probe.id for p in canaries],
+            findings=[p.probe.id for p in canaries if p.status == "finding"],
+            n_tasks=sum(p.n for p in canaries),
         )
     for key, why in NOT_YET_MEASURED.items():
         checks.setdefault(key, _check("NOT_MEASURED", reason=why))

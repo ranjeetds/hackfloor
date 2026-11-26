@@ -9,7 +9,7 @@ from typing import Any
 
 from hackfloor import stats
 from hackfloor.core import Action, Attempt, Subject, TaskRef
-from hackfloor.probes.base import Probe, ProbeContext, get_probes
+from hackfloor.probes.base import Probe, ProbeContext, answer_slot, get_probes
 
 EPS = 1e-9
 NOTHING_TO_TRY = "nothing to try on these tasks"
@@ -177,25 +177,6 @@ def _normalise(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
-def answer_slot(text: str, template: str) -> str | None:
-    """The text a completion puts in the answer slot of ``template``, or None if absent.
-
-    With a bare ``{answer}`` template the whole completion is the slot. Otherwise the slot is
-    the text between the last occurrence of the template's prefix and the next suffix.
-    """
-    if "{answer}" not in template:
-        return None
-    prefix, suffix = template.split("{answer}", 1)
-    if not prefix and not suffix:
-        return text
-    start = text.rfind(prefix) if prefix else 0
-    if start < 0:
-        return None
-    start += len(prefix)
-    end = text.find(suffix, start) if suffix else len(text)
-    return None if end < 0 else text[start:end]
-
-
 def same_as_reference(action: Action, reference: Action, template: str = "{answer}") -> bool:
     """True when a completion gives the reference answer, ignoring whitespace and case.
 
@@ -300,6 +281,7 @@ def scan(
                     subject=subject,
                     gold_template=template,
                     observation=observe(task),
+                    reference=reference if probe.uses_reference else None,
                 )
                 best: TaskOutcome | None = None
                 for variant in probe.variants(ctx):

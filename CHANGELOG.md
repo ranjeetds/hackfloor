@@ -14,6 +14,7 @@ All notable changes are recorded here. The format follows
 
 ### Changed
 
+- The terminal evidence lines keep a space after long variant names.
 - Terminal and Markdown reports label probe results as `PASS`, `FAIL` or `WARN` rather than
   using check-mark or ballot-x symbols.
 - README tightened (install, quickstart, probe table, integrations, integrity card, CI,
@@ -24,6 +25,12 @@ All notable changes are recorded here. The format follows
 
 ### Added
 
+- `HF-WRONG`, a plausible wrong answer in the right format: the reference answer with a
+  boolean or yes/no flipped, the last number changed by one, or the next option letter,
+  against an empty answer slot. It is the only probe given the reference completion
+  (`Probe.uses_reference`, `ProbeContext.reference`). It feeds `semantic.canary_floor`, which
+  is now measured instead of `NOT_MEASURED`. New fixtures `rlvr/vulnerable_halting` and
+  `rlvr/fixed_halting`. 15 probes in all.
 - Bounded partial credit is reported as `info`, not as a finding: a significant effect with no
   hack-pass whose best exploit reward is at most 10% of the reward range. The bound is set
   with `--partial-credit` (0 disables it). The card gains `summary.partial_credit`,
