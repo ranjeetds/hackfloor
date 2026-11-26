@@ -9,7 +9,7 @@ cheap hack?" Each finding is a concrete, replayable attempt.
 
 - It does not prove a grader is unhackable. A clean scan means the shipped probes failed.
 - It does not run model-based or search policies yet, so novel hacks found by optimisation
-  are out of scope for v0.1.
+  are out of scope for now.
 - It does not judge whether the task itself is well posed.
 
 ## Assumptions
@@ -21,7 +21,7 @@ cheap hack?" Each finding is a concrete, replayable attempt.
 
 ## Isolation
 
-v0.1 runs verifiers as local subprocesses in a temporary directory, with your user's
+hackfloor runs verifiers as local subprocesses in a temporary directory, with your user's
 permissions and environment. **This is not a security boundary.** Scan only
 environments you trust to run on your machine, or run hackfloor in a container or VM.
 Container isolation is planned for v0.3.

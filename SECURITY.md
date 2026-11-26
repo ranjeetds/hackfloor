@@ -21,7 +21,7 @@ hackfloor is pre-release. Only the latest commit on `main` receives fixes.
 
 ## Scope and limits
 
-hackfloor 0.1 runs environment verifiers as local subprocesses in a temporary directory. That
+hackfloor runs environment verifiers as local subprocesses in a temporary directory. That
 is **not** a sandbox. A malicious environment can do anything your user account can. Scan
 only environments you would run anyway, or run hackfloor inside a container or VM.
 
