@@ -37,14 +37,20 @@ theme:
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
+  - Concepts in plain words: concepts.md
   - Guides:
-      - Adapters: adapters.md
+      - Adapters and supported targets: adapters.md
       - CI, pre-commit and pytest: ci.md
+      - Bundled fixtures: fixtures.md
   - Reference:
       - Probes: probes.md
       - Integrity card: integrity-card.md
       - Statistics: statistics.md
-      - Threat model: threat-model.md
+      - Threat model and responsible use: threat-model.md
+  - Project:
+      - Background: background.md
+      - How it compares: comparison.md
+      - Roadmap: roadmap.md
 
 markdown_extensions:
   - admonition

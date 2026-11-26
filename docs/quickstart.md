@@ -20,6 +20,12 @@ Framework adapters are extras: `uv pip install -e ".[reasoning-gym]"`, `".[verif
 ## First scan
 
 ```bash
+hackfloor scan fixtures/rlvr/vulnerable_math
+```
+
+A task directory works the same way and can also write a Markdown report:
+
+```bash
 hackfloor scan fixtures/tasks/vulnerable_pytest --report report.md
 ```
 
@@ -61,6 +67,9 @@ nothing can be concluded).
 --fail-on critical|high|medium|none
 --quiet                      print only the verdict line
 ```
+
+Terms such as null policy, matched control and hack-pass are defined in
+[Concepts in plain words](concepts.md).
 
 ## Next
 

@@ -12,6 +12,16 @@ All notable changes are recorded here. The format follows
   using check-mark or ballot-x symbols.
 - README tightened (install, quickstart, probe table, integrations, integrity card, CI,
   citation) and pictographic symbols removed from documentation.
+- README rewritten for newcomers: a plain-English first line, a two-line example of a
+  hackable reward function, a quickstart with real output, and links to the docs instead of
+  reference tables.
+
+### Added
+
+- Docs pages: concepts in plain words (glossary and how a finding is decided), background,
+  bundled fixtures and their results, comparison with related tools, and roadmap. The
+  supported-targets table is now in the adapters page, and responsible use is in the threat
+  model page.
 
 ## [0.2.0] - 2026-11-26
 
