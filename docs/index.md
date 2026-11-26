@@ -38,5 +38,5 @@ hackfloor scan fixtures/rlvr/vulnerable_math
 | [Statistics](statistics.md) | calibration, decisions, severity, gameability |
 | [Threat model](threat-model.md) | what hackfloor does and does not protect against, and responsible use |
 | [Background](background.md) | the research behind the probes and OpenEnv RFC 008 |
-| [How it compares](comparison.md) | gradecheck, BenchJack and OpenEnv validation |
+| [How it compares](comparison.md) | envdoctor, rlgate, gradecheck, nudi, BenchJack, OpenEnv validation and paid audits |
 | [Roadmap](roadmap.md) | what is released and what is planned |

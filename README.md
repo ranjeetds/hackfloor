@@ -151,7 +151,7 @@ The step fails when a finding meets `fail-on`. A pre-commit hook and a pytest fi
 - [Bundled fixtures](https://ranjeetds.github.io/hackfloor/fixtures/): vulnerable and fixed teaching environments and their results
 - [Results on reasoning-gym 0.1.25](https://ranjeetds.github.io/hackfloor/results/reasoning-gym/): every dataset scanned, with commands to reproduce
 - [Background](https://ranjeetds.github.io/hackfloor/background/): the research behind the probes, and OpenEnv RFC 008
-- [How it compares](https://ranjeetds.github.io/hackfloor/comparison/) with gradecheck, BenchJack and OpenEnv validation
+- [How it compares](https://ranjeetds.github.io/hackfloor/comparison/) with envdoctor, rlgate, gradecheck, nudi, BenchJack and OpenEnv validation, and where each fits
 - [Roadmap](https://ranjeetds.github.io/hackfloor/roadmap/) and [threat model](https://ranjeetds.github.io/hackfloor/threat-model/)
 
 ## Citation
