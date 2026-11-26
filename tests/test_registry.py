@@ -16,6 +16,12 @@ BUILTIN_IDS = {
     "HF-CONFTEST",
     "HF-TESTEDIT",
     "HF-REWARDFILE",
+    "HF-SKIPTEST",
+    "HF-LOOKUP",
+    "HF-ECHO",
+    "HF-JUDGE",
+    "HF-ANSWERKEY",
+    "HF-GITLEAK",
 }
 
 

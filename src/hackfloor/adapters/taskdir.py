@@ -26,12 +26,14 @@ on the roadmap.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +66,12 @@ class _TaskSpec:
         self.entry_file = task.get("entry_file")
         self.entry_functions = tuple(task.get("entry_functions", ()))
         self.visible_tests = tuple(task.get("visible_tests", ()))
+        self.setup = list(task.get("setup", []))
+        self.setup_timeout = float(task.get("setup_timeout", 60))
+        instruction = self.dir / task.get("instruction", "instruction.md")
+        self.instruction = (
+            instruction.read_text(encoding="utf-8") if instruction.is_file() else None
+        )
         self.command = list(verifier.get("command", []))
         self.cwd = verifier.get("cwd", "{workspace}")
         self.reward_mode = verifier.get("reward", "file")
@@ -81,6 +89,31 @@ class _TaskSpec:
             raise ValueError("[verifier] reward = 'file' needs reward_file")
         if not self.environment.is_dir():
             raise FileNotFoundError(self.environment)
+
+
+def _fill(text: str, spec: _TaskSpec, root: Path, workspace: Path, logs: Path) -> str:
+    subs = {
+        "{python}": sys.executable,
+        "{task}": str(spec.dir),
+        "{sandbox}": str(root),
+        "{workspace}": str(workspace),
+        "{logs}": str(logs),
+    }
+    for key, value in subs.items():
+        text = text.replace(key, value)
+    return text
+
+
+def _env(spec: _TaskSpec, root: Path, workspace: Path, logs: Path) -> dict[str, str]:
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST_")}
+    env.update(
+        HACKFLOOR_SANDBOX=str(root),
+        HACKFLOOR_WORKSPACE=str(workspace),
+        HACKFLOOR_LOGS=str(logs),
+        HACKFLOOR_TASK=str(spec.dir),
+        PYTHONDONTWRITEBYTECODE="1",
+    )
+    return env
 
 
 def _overlay(src: Path, dst: Path) -> None:
@@ -134,34 +167,61 @@ class TaskDirSubject:
 
         return noop
 
+    def observation(self, task: TaskRef) -> str | None:
+        return self._spec(task).instruction
+
+    @contextlib.contextmanager
+    def sandbox_preview(self, task: TaskRef) -> Iterator[Workspace]:
+        """A fresh, set-up sandbox that probes may inspect before choosing variants."""
+        with tempfile.TemporaryDirectory(prefix="hackfloor-") as tmp:
+            yield self._materialize(self._spec(task), Path(tmp))
+
+    def _materialize(self, spec: _TaskSpec, tmp: Path) -> Workspace:
+        root = tmp / "sandbox"
+        shutil.copytree(spec.environment, root)
+        workspace = root / spec.workspace
+        workspace.mkdir(parents=True, exist_ok=True)
+        logs = root / "logs"
+        logs.mkdir(exist_ok=True)
+        reward_path = root / spec.reward_file if spec.reward_file else None
+        if spec.setup:
+            proc = subprocess.run(
+                [_fill(part, spec, root, workspace, logs) for part in spec.setup],
+                cwd=workspace,
+                env=_env(spec, root, workspace, logs),
+                capture_output=True,
+                text=True,
+                timeout=spec.setup_timeout,
+                check=False,
+            )
+            if proc.returncode != 0:
+                raise RuntimeError(f"task setup failed: {(proc.stdout + proc.stderr)[-500:]}")
+        return Workspace(
+            root,
+            workspace,
+            logs,
+            entry_file=spec.entry_file,
+            entry_functions=spec.entry_functions,
+            visible_tests=spec.visible_tests,
+            reward_file=reward_path,
+            reward_min=spec.reward_min,
+            reward_max=spec.reward_max,
+        )
+
     def grade(self, task: TaskRef, action: Action) -> Attempt:
         if isinstance(action, str):
             raise TypeError("task subjects grade workspace actions, not completion strings")
         spec = self._spec(task)
         with tempfile.TemporaryDirectory(prefix="hackfloor-") as tmp:
-            root = Path(tmp) / "sandbox"
-            shutil.copytree(spec.environment, root)
-            workspace = root / spec.workspace
-            workspace.mkdir(parents=True, exist_ok=True)
-            logs = root / "logs"
-            logs.mkdir(exist_ok=True)
-            reward_path = root / spec.reward_file if spec.reward_file else None
-            ws = Workspace(
-                root,
-                workspace,
-                logs,
-                entry_file=spec.entry_file,
-                entry_functions=spec.entry_functions,
-                visible_tests=spec.visible_tests,
-                reward_file=reward_path,
-                reward_min=spec.reward_min,
-                reward_max=spec.reward_max,
-            )
+            try:
+                ws = self._materialize(spec, Path(tmp))
+            except (RuntimeError, subprocess.TimeoutExpired) as exc:
+                return Attempt(reward=float("nan"), error=str(exc))
             try:
                 action(ws)
             except Exception as exc:
                 return Attempt(reward=float("nan"), error=f"action failed: {exc}")
-            return self._run_verifier(spec, root, workspace, logs, reward_path)
+            return self._run_verifier(spec, ws.root, ws.path, ws.logs, ws.reward_file)
 
     def _run_verifier(
         self,
@@ -171,27 +231,11 @@ class TaskDirSubject:
         logs: Path,
         reward_path: Path | None,
     ) -> Attempt:
-        subs = {
-            "{python}": sys.executable,
-            "{task}": str(spec.dir),
-            "{sandbox}": str(root),
-            "{workspace}": str(workspace),
-            "{logs}": str(logs),
-        }
+        env = _env(spec, root, workspace, logs)
 
         def fill(text: str) -> str:
-            for key, value in subs.items():
-                text = text.replace(key, value)
-            return text
+            return _fill(text, spec, root, workspace, logs)
 
-        env = {k: v for k, v in os.environ.items() if not k.startswith("PYTEST_")}
-        env.update(
-            HACKFLOOR_SANDBOX=str(root),
-            HACKFLOOR_WORKSPACE=str(workspace),
-            HACKFLOOR_LOGS=str(logs),
-            HACKFLOOR_TASK=str(spec.dir),
-            PYTHONDONTWRITEBYTECODE="1",
-        )
         try:
             proc = subprocess.run(
                 [fill(part) for part in spec.command],

@@ -22,6 +22,7 @@ def test_vulnerable_math_is_flagged(fixtures):
     assert probes["HF-FORMAT"].severity == "medium"
     assert probes["HF-FORMAT"].delta_mean == pytest.approx(0.2)
     assert probes["HF-EMPTY"].status == "resisted"
+    assert probes["HF-JUDGE"].status == "resisted"
     assert probes["HF-EQ"].status == "not_applicable"
     assert result.verdict == "VULNERABLE"
     assert result.level == 0
@@ -35,13 +36,43 @@ def test_fixed_math_is_clean(fixtures):
     assert result.level == 1
 
 
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [("vulnerable_judge", {"HF-JUDGE", "HF-DUMP"}), ("fixed_judge", set())],
+)
+def test_judge_fixtures(fixtures, name, expected):
+    result = scan(resolve_subject(str(fixtures / "rlvr" / name)), ScanConfig(replays=1))
+    assert {p.probe.id for p in result.findings} == expected
+    if expected:
+        assert _by_id(result)["HF-JUDGE"].severity == "critical"
+
+
+def test_echo_finds_answers_visible_in_the_prompt():
+    def reward(completion, answer):
+        return 1.0 if answer in completion else 0.0
+
+    rows = [{"prompt": f"Repeat the code {1000 + i}.", "answer": str(1000 + i)} for i in range(6)]
+    result = scan(RewardFunctionSubject(reward, rows), ScanConfig(replays=1))
+    assert _by_id(result)["HF-ECHO"].severity == "critical"
+    assert result.leaks == (6, 6)
+
+
+def test_answer_in_text_uses_token_boundaries():
+    from hackfloor.adapters.rlvr import answer_in_text
+
+    assert answer_in_text("12", "What is 5 + 7? 12 apples")
+    assert not answer_in_text("12", "What is 112 + 3?")
+    assert not answer_in_text("2", "What is 2.5 doubled?")
+    assert answer_in_text("x", None) is None
+
+
 def test_probes_never_see_the_answer(fixtures):
     """Completion probes must be task-blind: identical variants for every row."""
     from hackfloor.probes.base import ProbeContext, get_probes
 
     subject = resolve_subject(str(fixtures / "rlvr" / "vulnerable_math"))
     t0, t1 = subject.tasks()[:2]
-    for probe in get_probes(["HF-EMPTY", "HF-FORMAT", "HF-DUMP"]):
+    for probe in get_probes(["HF-EMPTY", "HF-FORMAT", "HF-DUMP", "HF-JUDGE"]):
         v0 = [v.exploit for v in probe.variants(ProbeContext(t0, subject, subject.gold_template))]
         v1 = [v.exploit for v in probe.variants(ProbeContext(t1, subject, subject.gold_template))]
         assert v0 == v1
@@ -71,7 +102,7 @@ def test_verl_and_trl_signatures(flavor):
         return [float(a in c) for c, a in zip(completions, answer, strict=False)]
 
     fn = verl if flavor == "verl" else trl
-    rows = [{"prompt": f"q{i}", "answer": str(10 + i)} for i in range(8)]
+    rows = [{"prompt": f"q{i}", "answer": str(20 + i)} for i in range(8)]
     subject = RewardFunctionSubject(fn, rows, flavor=flavor)
     assert subject.flavor == flavor
     result = scan(subject, ScanConfig(replays=1))
