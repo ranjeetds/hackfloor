@@ -6,6 +6,13 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Terminal and Markdown reports label probe results as `PASS`, `FAIL` or `WARN` rather than
+  using check-mark or ballot-x symbols.
+- README tightened (install, quickstart, probe table, integrations, integrity card, CI,
+  citation) and pictographic symbols removed from documentation.
+
 ## [0.2.0] - 2026-11-26
 
 First release on PyPI.
