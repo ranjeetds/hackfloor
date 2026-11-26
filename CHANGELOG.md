@@ -19,6 +19,9 @@ All notable changes are recorded here. The format follows
 
 ### Changed
 
+- The comparison page is rewritten: which tool to pick for which input, envdoctor, rlgate,
+  gradecheck, nudi, BenchJack and OpenEnv side by side, where other tools are ahead, and the
+  paid audits (Holdout, Cupel).
 - The terminal evidence lines keep a space after long variant names.
 - Terminal and Markdown reports label probe results as `PASS`, `FAIL` or `WARN` rather than
   using check-mark or ballot-x symbols.
