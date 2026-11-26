@@ -11,6 +11,21 @@ An adapter turns an environment into a `Subject` (see `src/hackfloor/core.py`):
 | `capabilities()` | what probes may do: `completion`, `workspace`, `python_entry`, `visible_tests`, `reward_file_writable` |
 | `describe()` | metadata recorded in the card |
 
+## Supported targets
+
+| Target | Status | How |
+|---|---|---|
+| Plain Python reward function (`fn(completion, answer)`) | stable | `hackfloor scan file.py:fn --data rows.jsonl` |
+| verl `compute_score(data_source, solution_str, ground_truth, extra_info)` | stable | `--flavor verl`, or detected from the signature |
+| TRL `reward_funcs(prompts, completions, **columns)` | stable | `--flavor trl`, or detected from the signature |
+| Harbor-style task directories | stable | `hackfloor.toml` beside the task; native `task.toml` reading is planned |
+| reasoning-gym | stable | `hackfloor scan reasoning-gym:<dataset>`; tested against 0.1.25 |
+| Prime Intellect `verifiers` (v1 API) | experimental | `hackfloor scan verifiers:<module:factory>`; trace-level rewards only; tested against 0.4.1 |
+| OpenEnv `Environment` (single step, in process) | experimental | `subject:<module:factory>`; tested against openenv 0.15.0, including its `reasoning_gym_env` |
+| OpenEnv RFC 008 `CheckResult` export | stable | `--openenv-checks checks.json`; validated against openenv 0.15.0's schema |
+| GitHub Action, pre-commit hook, pytest fixture | stable | see [CI](ci.md) |
+| OpenRLHF, inspect_ai scorers, multi-step and HTTP OpenEnv | planned | |
+
 ## Reward functions
 
 ```bash
@@ -24,6 +39,25 @@ Call conventions, picked from the parameter names or set with `--flavor`:
 | `plain` | `fn(completion, answer) -> float` |
 | `verl` | `fn(data_source, solution_str, ground_truth, extra_info) -> float \| dict` |
 | `trl` | `fn(prompts=[...], completions=[...], **columns) -> list[float]` |
+
+### From Python
+
+```python
+from hackfloor import scan
+from hackfloor.adapters import RewardFunctionSubject
+
+
+def reward(completion: str, answer: str) -> float:
+    return 1.0 if answer in completion else 0.0
+
+
+rows = [{"prompt": f"What is {n} + 10?", "answer": str(n + 10)} for n in range(20)]
+subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+result = scan(subject)
+print(result.verdict, result.level)  # e.g. VULNERABLE 0
+for p in result.findings:
+    print(p.probe.id, p.severity, f"{p.hack_passes}/{p.n}")
+```
 
 A directory with a `hackfloor.toml` can describe the same thing:
 
@@ -41,8 +75,8 @@ max = 1.0
 
 ## Task directories
 
-A task directory follows a Harbor-like layout and is described by `hackfloor.toml`; see the
-README and `fixtures/tasks/*/hackfloor.toml`. Every attempt copies `environment/` into a fresh
+A task directory follows a Harbor-like layout and is described by `hackfloor.toml`; see
+`fixtures/tasks/*/hackfloor.toml` for working examples. Every attempt copies `environment/` into a fresh
 temporary sandbox, applies the action to the workspace, and runs the verifier command with
 these substitutions and variables:
 

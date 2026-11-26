@@ -54,3 +54,10 @@ an agent would see. When they search and find nothing, the card records that as 
 
 Proposals are welcome; see [CONTRIBUTING.md](https://github.com/ranjeetds/hackfloor/blob/main/CONTRIBUTING.md). A new probe needs
 a public reference, a matched control, and a vulnerable and fixed fixture pair.
+
+## Writing your own
+
+Subclass `Probe`, register it, or ship it through the `hackfloor.probes` entry point.
+`hackfloor probes` then lists it next to the built-in ones. A probe added to this repository
+needs a public reference, a matched control, and a vulnerable and fixed fixture pair; see
+[CONTRIBUTING.md](https://github.com/ranjeetds/hackfloor/blob/main/CONTRIBUTING.md).

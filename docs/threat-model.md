@@ -30,3 +30,15 @@ Container isolation is planned for v0.3.
 
 The probes are minimal forms of hacks already described in public work. See
 [SECURITY.md](https://github.com/ranjeetds/hackfloor/blob/main/SECURITY.md) for how to handle hacks found in other people's environments.
+
+## Responsible use
+
+hackfloor exists so that environment authors find their graders' loopholes before a training
+run does.
+
+- Scan environments you maintain or are allowed to test.
+- If you find a hack in someone else's environment or benchmark, report it to the maintainers
+  privately and give them time to fix it before you publish.
+- Do not use the output to inflate leaderboard scores.
+- To report a problem in hackfloor itself, follow
+  [SECURITY.md](https://github.com/ranjeetds/hackfloor/blob/main/SECURITY.md).
