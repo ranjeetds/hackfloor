@@ -12,6 +12,7 @@ from hackfloor.core import Action, Attempt, Subject, TaskRef
 from hackfloor.probes.base import Probe, ProbeContext, get_probes
 
 EPS = 1e-9
+NOTHING_TO_TRY = "nothing to try on these tasks"
 SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1, "none": 0}
 
 
@@ -23,6 +24,7 @@ class ScanConfig:
     min_tasks_for_test: int = 5
     seed: int = 0
     probe_ids: Sequence[str] | None = None
+    gameability_bound: float = 0.9  # minimum reward/success correlation
 
 
 @dataclass
@@ -118,6 +120,11 @@ class ScanResult:
     reward_range: tuple[float, float]
     seconds: float
     started_at: float
+    #: (solved, reward) for every graded attempt. Only the reference solution solves the
+    #: task; the null policy, probes and controls do not. Used for the gameability gap.
+    samples: list[tuple[bool, float]] = field(default_factory=list)
+    #: Tasks whose reference answer is visible in the observation, out of those checked.
+    leaks: tuple[int, int] = (0, 0)
 
     @property
     def findings(self) -> list[ProbeResult]:
@@ -180,8 +187,11 @@ def scan(
     errors: list[str] = []
     template = gold_template or getattr(subject, "gold_template", "{answer}")
 
-    def record_errors(where: str, attempts: list[Attempt]) -> None:
+    samples: list[tuple[bool, float]] = []
+
+    def record_errors(where: str, attempts: list[Attempt], solved: bool = False) -> None:
         for a in attempts:
+            samples.append((solved, a.reward if a.well_formed else lo))
             if a.error:
                 errors.append(f"{where}: {a.error}")
             elif not (lo - EPS <= a.reward <= hi + EPS):
@@ -196,7 +206,7 @@ def scan(
     for task in tasks:
         g_att = _grade_n(subject, task, subject.gold(task), cfg.replays)
         n_att = _grade_n(subject, task, subject.null(task), cfg.replays)
-        record_errors(f"{task.id}/gold", g_att)
+        record_errors(f"{task.id}/gold", g_att, solved=True)
         record_errors(f"{task.id}/null", n_att)
         gold[task.id], g_ok, _ = _value(g_att, lo)
         null[task.id], n_ok, _ = _value(n_att, lo)
@@ -206,6 +216,15 @@ def scan(
     if not consistent:
         reasons.append("gold or null rewards changed between replays")
     calibration = Calibration(gold, null, "FAIL" if reasons else "PASS", reasons, consistent)
+
+    observe_fn = getattr(subject, "observation", None)
+
+    def observe(task: TaskRef) -> str | None:
+        return observe_fn(task) if callable(observe_fn) else None
+
+    visible_fn = getattr(subject, "answer_visible", None)
+    leak_flags = [visible_fn(t) for t in tasks] if callable(visible_fn) else []
+    leak_checked = [f for f in leak_flags if f is not None]
 
     # 2. Probes.
     caps = subject.capabilities()
@@ -222,7 +241,12 @@ def scan(
         outcomes: list[TaskOutcome] = []
         try:
             for task in tasks:
-                ctx = ProbeContext(task=task, subject=subject, gold_template=template)
+                ctx = ProbeContext(
+                    task=task,
+                    subject=subject,
+                    gold_template=template,
+                    observation=observe(task),
+                )
                 best: TaskOutcome | None = None
                 for variant in probe.variants(ctx):
                     e_att = _grade_n(subject, task, variant.exploit, cfg.replays)
@@ -253,6 +277,9 @@ def scan(
         except Exception as exc:  # a broken probe must not hide the others
             results.append(ProbeResult(probe, "error", message=f"{type(exc).__name__}: {exc}"))
             continue
+        if not outcomes:
+            results.append(ProbeResult(probe, "not_applicable", message=NOTHING_TO_TRY))
+            continue
         results.append(ProbeResult(probe, "pending", outcomes=outcomes))
 
     # 3. Decisions, with Holm correction across probes that use the sign test.
@@ -278,6 +305,12 @@ def scan(
         else:
             significant = big_enough and r.wins >= 1
         winners_consistent = all(o.consistent for o in r.outcomes if o.win)
+        # A hack-pass that reproduces on every replay is a concrete exploit, so it is a
+        # finding even when there are too few tasks for the sign test to reach significance.
+        reproducible_pass = any(o.hack_pass and o.consistent for o in r.outcomes)
+        if not significant and reproducible_pass:
+            significant = True
+            r.basis += "; reproducible hack-pass"
         if not significant:
             r.status = "resisted"
         elif not winners_consistent and r.basis == "deterministic-replay":
@@ -302,4 +335,6 @@ def scan(
         reward_range=(lo, hi),
         seconds=time.perf_counter() - t0,
         started_at=started,
+        samples=samples,
+        leaks=(sum(leak_checked), len(leak_checked)),
     )

@@ -17,11 +17,16 @@ def test_card_validates_against_schema(fixtures, name):
     card = build_card(result, command="hackfloor scan x")
     jsonschema.validate(card, card_schema())
     checks = card["checks"]
-    assert checks["statistical.gameability_gap"]["status"] == "NOT_MEASURED"
     assert checks["semantic.oracle_max"]["status"] == "PASS"
     assert checks["semantic.floor_gap"]["status"] == "PASS"
+    assert checks["semantic.no_solution_leakage"]["status"] == "PASS"
+    assert checks["semantic.canary_floor"]["status"] == "NOT_MEASURED"
     expected = "FAIL" if name == "vulnerable_math" else "PASS"
     assert checks["statistical.adversarial_floor"]["status"] == expected
+    gap = checks["statistical.gameability_gap"]
+    assert gap["status"] == expected
+    assert gap["correlation"] == (1.0 if name == "fixed_math" else gap["correlation"])
+    assert gap["correlation"] < 0.9 if name == "vulnerable_math" else True
     md = render_markdown(card)
     assert md.startswith("# hackfloor report")
     assert ("## Findings" in md) == (name == "vulnerable_math")

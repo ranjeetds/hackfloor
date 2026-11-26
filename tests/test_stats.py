@@ -40,3 +40,12 @@ def test_bootstrap_is_seeded_and_brackets_the_mean():
     b = stats.paired_bootstrap_ci(diffs, seed=3)
     assert a == b
     assert a[0] <= stats.mean(diffs) <= a[1]
+
+
+def test_point_biserial_and_auroc():
+    labels = [True, True, False, False]
+    assert stats.point_biserial(labels, [1.0, 1.0, 0.0, 0.0]) == pytest.approx(1.0)
+    assert stats.auroc(labels, [1.0, 1.0, 0.0, 0.0]) == 1.0
+    assert stats.auroc(labels, [1.0, 1.0, 1.0, 0.0]) == pytest.approx(0.75)
+    assert stats.point_biserial(labels, [0.5] * 4) is None
+    assert stats.auroc([True, True], [1.0, 0.0]) is None

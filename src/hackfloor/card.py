@@ -10,7 +10,8 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
-from hackfloor.scan import ProbeResult, ScanResult
+from hackfloor import stats
+from hackfloor.scan import NOTHING_TO_TRY, ProbeResult, ScanResult
 
 CARD_VERSION = "0.1"
 
@@ -18,9 +19,7 @@ CARD_VERSION = "0.1"
 #: reward-integrity and containment criteria hackfloor 0.1 does not measure yet. They are
 #: listed so a card never implies coverage it does not have.
 NOT_YET_MEASURED = {
-    "statistical.gameability_gap": "needs model-based policies (planned for v0.3)",
-    "semantic.canary_floor": "export of probes as OpenEnv canaries is planned for v0.2",
-    "semantic.no_solution_leakage": "leak probes are planned for v0.2",
+    "semantic.canary_floor": "export of probes as OpenEnv canaries is planned",
     "runtime.network_policy": "needs container isolation (planned for v0.3)",
     "runtime.host_containment": "needs container isolation (planned for v0.3)",
     "runtime.resource_bounds": "needs container isolation (planned for v0.3)",
@@ -84,11 +83,51 @@ def _check(status: str, **extra: Any) -> dict[str, Any]:
     return {"status": status, **extra}
 
 
+def _gameability(result: ScanResult) -> dict[str, Any]:
+    labels = [solved for solved, _ in result.samples]
+    values = [reward for _, reward in result.samples]
+    r = stats.point_biserial(labels, values)
+    auc = stats.auroc(labels, values)
+    bound = result.config.gameability_bound
+    scope = "scripted policies only: reference = solved; null, probes, controls = not solved"
+    if r is None:
+        return _check("SKIP", reason="reward or success is constant across attempts", scope=scope)
+    return _check(
+        "PASS" if r >= bound else "FAIL",
+        correlation=_r(r),
+        auroc=_r(auc),
+        declared_bound=bound,
+        n_attempts=len(values),
+        scope=scope,
+    )
+
+
+def _leakage(result: ScanResult) -> dict[str, Any]:
+    leak_probes = [p for p in result.probes if p.probe.rfc008 == "semantic.no_solution_leakage"]
+    ran = [p for p in leak_probes if p.status not in ("not_applicable", "error")]
+    # A leak probe that searched the sandbox and found nothing to copy is evidence too.
+    searched = [p for p in leak_probes if p.message == NOTHING_TO_TRY]
+    found = [p.probe.id for p in ran if p.status == "finding"]
+    visible, checked = result.leaks
+    if not ran and not searched and not checked:
+        return _check("NOT_MEASURED", reason="no leak probe applies and no observation to check")
+    status = "FAIL" if found or visible else "PASS"
+    return _check(
+        status,
+        probes_run=[p.probe.id for p in ran],
+        searched_nothing_found=[p.probe.id for p in searched],
+        findings=found,
+        answer_visible_in_observation={"tasks": visible, "checked": checked},
+    )
+
+
 def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
     from hackfloor import __version__
 
     cal = result.calibration
-    floor_probes = [p for p in result.probes if p.probe.rfc008.endswith("adversarial_floor")]
+    # Every probe is a non-solving policy, so all of them form the adversarial panel except the
+    # containment probes, which are reported under runtime.oracle_containment.
+    floor_probes = [p for p in result.probes if not p.probe.rfc008.startswith("runtime.")]
     floor_findings = [p for p in floor_probes if p.status == "finding"]
     floor_ran = [p for p in floor_probes if p.status not in ("not_applicable", "error")]
     clean_n = sum(p.n for p in floor_ran)
@@ -130,6 +169,8 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
                 else {"hack_pass_upper95_per_probe_task": _r(1 - 0.05 ** (1 / max(1, clean_n)))}
             ),
         ),
+        "statistical.gameability_gap": _gameability(result),
+        "semantic.no_solution_leakage": _leakage(result),
         "runtime.reward_well_formed": _check(
             "FAIL" if result.errors else "PASS",
             errors=result.errors[:20],

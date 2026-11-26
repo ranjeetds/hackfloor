@@ -90,3 +90,28 @@ def paired_bootstrap_ci(
 
 def mean(values: Sequence[float]) -> float:
     return sum(values) / len(values) if values else 0.0
+
+
+def point_biserial(labels: Sequence[bool], values: Sequence[float]) -> float | None:
+    """Pearson correlation between a binary label and a value; None if either is constant."""
+    n = len(values)
+    if n < 2 or len(labels) != n:
+        return None
+    xs = [1.0 if label else 0.0 for label in labels]
+    mx, my = mean(xs), mean(values)
+    sxx = sum((x - mx) ** 2 for x in xs)
+    syy = sum((y - my) ** 2 for y in values)
+    if sxx == 0 or syy == 0:
+        return None
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, values, strict=True))
+    return sxy / math.sqrt(sxx * syy)
+
+
+def auroc(labels: Sequence[bool], values: Sequence[float]) -> float | None:
+    """P(a positive outranks a negative), ties counted as one half."""
+    pos = [v for label, v in zip(labels, values, strict=True) if label]
+    neg = [v for label, v in zip(labels, values, strict=True) if not label]
+    if not pos or not neg:
+        return None
+    wins = sum((p > q) + 0.5 * (p == q) for p in pos for q in neg)
+    return wins / (len(pos) * len(neg))
