@@ -38,6 +38,7 @@ class ProbeContext:
     task: TaskRef
     subject: Subject
     gold_template: str = "{answer}"
+    observation: str | None = None  # what the agent is shown (the prompt), if known
 
     def wrap(self, text: str) -> str:
         """Put ``text`` where the answer would go in the expected output format."""
@@ -60,6 +61,7 @@ class Probe:
         return self.requires.issubset(set(capabilities))
 
     def variants(self, ctx: ProbeContext) -> list[Variant]:  # pragma: no cover - interface
+        """Return the attempts for one task. An empty list means: nothing to try here."""
         raise NotImplementedError
 
 

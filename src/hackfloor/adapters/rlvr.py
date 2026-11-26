@@ -16,6 +16,7 @@ import importlib.util
 import inspect
 import json
 import math
+import re
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -62,6 +63,13 @@ def detect_flavor(fn: Callable[..., Any]) -> str:
     if "completions" in params:
         return "trl"
     return "plain"
+
+
+def answer_in_text(answer: str, text: str | None) -> bool | None:
+    if text is None or not answer.strip():
+        return None
+    pattern = r"(?<![\w.])" + re.escape(answer.strip()) + r"(?!\w|\.\d)"
+    return re.search(pattern, text) is not None
 
 
 def _lookup(row: dict[str, Any], key: str) -> Any:
@@ -147,6 +155,18 @@ class RewardFunctionSubject:
 
     def null(self, task: TaskRef) -> Action:
         return ""
+
+    def observation(self, task: TaskRef) -> str | None:
+        prompt = self._row(task).get(self.prompt_key)
+        if prompt is None:
+            return None
+        return prompt if isinstance(prompt, str) else json.dumps(prompt)
+
+    def answer_visible(self, task: TaskRef) -> bool | None:
+        """Whether the reference answer appears, as a whole token, in the prompt."""
+        return answer_in_text(
+            str(_lookup(self._row(task), self.answer_key)), self.observation(task)
+        )
 
     def _call(self, row: dict[str, Any], completion: str) -> Any:
         answer = _lookup(row, self.answer_key)
