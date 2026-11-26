@@ -44,3 +44,19 @@ jobs:
           if uv run hackfloor scan fixtures/tasks/vulnerable_pytest --out vuln-card.json; then
             echo "expected the vulnerable fixture to fail the scan" && exit 1
           fi
+  integrations:
+    # Adapters against the real verifiers, OpenEnv and reasoning-gym packages.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv pip install -e ".[dev,integrations]"
+      - run: git clone --quiet --depth 1 --branch v0.15.0 https://github.com/openenv/OpenEnv.git "$RUNNER_TEMP/OpenEnv"
+      - name: Integration tests (none may skip)
+        env:
+          HACKFLOOR_OPENENV_REPO: ${{ runner.temp }}/OpenEnv
+        run: |
+          uv run pytest tests/test_integrations.py -rs | tee integrations.txt
+          if grep -q SKIPPED integrations.txt; then echo "an integration test was skipped" && exit 1; fi

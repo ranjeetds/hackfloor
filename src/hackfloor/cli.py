@@ -14,6 +14,7 @@ from rich.table import Table
 from hackfloor import __version__
 from hackfloor.adapters import resolve_subject
 from hackfloor.card import build_card, write_card
+from hackfloor.export import write_openenv_checks
 from hackfloor.probes.base import get_probes
 from hackfloor.report import render_markdown, render_terminal
 from hackfloor.scan import SEVERITY_ORDER, ScanConfig, scan
@@ -32,7 +33,8 @@ def _parser() -> argparse.ArgumentParser:
     s.add_argument(
         "target",
         help="a task or RLVR directory with hackfloor.toml, a directory of tasks, "
-        "or file.py:reward_fn / module:reward_fn",
+        "file.py:reward_fn / module:reward_fn, reasoning-gym:<dataset>, "
+        "verifiers:<module:factory> or subject:<module:factory>",
     )
     s.add_argument("--data", help="JSONL rows (prompt, answer) for a reward-function target")
     s.add_argument("--flavor", choices=("auto", "plain", "verl", "trl"), help="reward fn signature")
@@ -46,6 +48,11 @@ def _parser() -> argparse.ArgumentParser:
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--out", default="hackfloor-card.json", help="integrity card path")
     s.add_argument("--report", help="also write a Markdown report here")
+    s.add_argument(
+        "--openenv-checks",
+        metavar="PATH",
+        help="also write the RFC 008 checks as OpenEnv CheckResult records (JSON)",
+    )
     s.add_argument(
         "--fail-on",
         choices=FAIL_ON,
@@ -78,6 +85,7 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
         flavor=args.flavor,
         gold_template=args.gold_template,
         limit=args.tasks,
+        seed=args.seed,
     )
     config = ScanConfig(
         replays=max(1, args.replays),
@@ -102,6 +110,9 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
         report.parent.mkdir(parents=True, exist_ok=True)
         report.write_text(render_markdown(card), encoding="utf-8")
         console.print(f"[dim]report         →[/dim] {report}")
+    if args.openenv_checks:
+        checks = write_openenv_checks(card, args.openenv_checks)
+        console.print(f"[dim]openenv checks →[/dim] {checks}")
     if card["verdict"] == "UNCALIBRATED":
         return 2
     if args.fail_on != "none" and any(
@@ -122,7 +133,7 @@ def main(argv: Sequence[str] | None = None, *, console: Console | None = None) -
         return _cmd_probes(console)
     try:
         return _cmd_scan(args, console, argv)
-    except (FileNotFoundError, ValueError, KeyError) as exc:
+    except (FileNotFoundError, ImportError, ValueError, KeyError) as exc:
         console.print(f"[bold red]error:[/bold red] {exc}")
         return 2
 
