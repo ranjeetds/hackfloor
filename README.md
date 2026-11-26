@@ -12,6 +12,7 @@
   <img alt="Python 3.10 to 3.13" src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776ab">
   <a href="https://github.com/ranjeetds/hackfloor/blob/main/LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
   <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-orange">
+  <a href="#contributors"><img alt="All contributors" src="https://img.shields.io/badge/all_contributors-1-orange.svg"></a>
   <a href="#integrity-levels"><img alt="Integrity card" src="https://img.shields.io/badge/integrity%20card-v0.1-6f42c1"></a>
 </p>
 
@@ -318,13 +319,37 @@ There is also a [`CITATION.cff`](https://github.com/ranjeetds/hackfloor/blob/mai
 
 ## Contributing
 
-New probes, adapters and documented hacks are welcome. A new probe needs a public reference, a matched control, and a fixture pair (vulnerable and fixed) that proves it fires and that the fix holds. See [CONTRIBUTING.md](https://github.com/ranjeetds/hackfloor/blob/main/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/ranjeetds/hackfloor/blob/main/CODE_OF_CONDUCT.md).
+New probes, adapters and documented hacks are welcome; [good first issues](https://github.com/ranjeetds/hackfloor/labels/good%20first%20issue) and [help wanted](https://github.com/ranjeetds/hackfloor/labels/help%20wanted) are good places to start. A new probe needs a public reference, a matched control, and a fixture pair (vulnerable and fixed) that proves it fires and that the fix holds. See [CONTRIBUTING.md](https://github.com/ranjeetds/hackfloor/blob/main/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/ranjeetds/hackfloor/blob/main/CODE_OF_CONDUCT.md).
 
 ```bash
-uv pip install -e ".[dev]"
+uv venv && uv pip install -e ".[dev]"
 ruff check . && ruff format --check .
 pytest
 ```
+
+Commits must be signed off (`git commit -s`, [DCO](https://developercertificate.org/)).
+
+## Contributors
+
+Thanks to everyone who has contributed code, probes, docs, ideas and bug reports ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ranjeetds"><img src="https://avatars.githubusercontent.com/u/18438853?v=4?s=100" width="100px;" alt="Ranjeet Dhumal"/><br /><sub><b>Ranjeet Dhumal</b></sub></a><br /><a href="https://github.com/ranjeetds/hackfloor/commits?author=ranjeetds" title="Code">💻</a> <a href="https://github.com/ranjeetds/hackfloor/commits?author=ranjeetds" title="Documentation">📖</a> <a href="#ideas-ranjeetds" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-ranjeetds" title="Maintenance">🚧</a> <a href="https://github.com/ranjeetds/hackfloor/commits?author=ranjeetds" title="Tests">⚠️</a> <a href="#infra-ranjeetds" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+New contributors are added after their first merged contribution. Start with a [good first issue](https://github.com/ranjeetds/hackfloor/labels/good%20first%20issue).
 
 ## License
 
