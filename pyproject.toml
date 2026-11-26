@@ -36,6 +36,7 @@ reasoning-gym = ["reasoning-gym>=0.1.25"]
 verifiers = ["verifiers>=0.4.1,<0.5; python_version >= '3.11'"]
 openenv = ["openenv>=0.15"]
 integrations = ["hackfloor[reasoning-gym,verifiers,openenv]"]
+docs = ["mkdocs-material>=9.5,<10"]
 
 [project.urls]
 Homepage = "https://github.com/ranjeetds/hackfloor"

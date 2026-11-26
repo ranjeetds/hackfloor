@@ -29,4 +29,4 @@ Container isolation is planned for v0.3.
 ## Dual use
 
 The probes are minimal forms of hacks already described in public work. See
-[SECURITY.md](../SECURITY.md) for how to handle hacks found in other people's environments.
+[SECURITY.md](https://github.com/ranjeetds/hackfloor/blob/main/SECURITY.md) for how to handle hacks found in other people's environments.
