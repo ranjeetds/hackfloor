@@ -6,6 +6,12 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- A probe variant whose output gives the reference answer (for example an empty answer slot on
+  a task whose answer is empty) is no longer graded on that task, so it can no longer produce a
+  false hack-pass. The card counts these as `skipped_same_as_reference`.
+
 ### Changed
 
 - Terminal and Markdown reports label probe results as `PASS`, `FAIL` or `WARN` rather than

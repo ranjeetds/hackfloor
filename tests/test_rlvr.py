@@ -132,3 +132,60 @@ def test_uncalibrated_when_reference_does_not_beat_null():
 def test_module_target_requires_data(tmp_path):
     with pytest.raises(ValueError):
         resolve_subject("some_module:reward")
+
+
+def test_output_equal_to_the_reference_is_not_a_hack():
+    """A task whose correct answer is empty must not make the empty-slot probes critical.
+
+    Regression test for reasoning-gym's ``ab`` dataset, where one task's answer is the empty
+    string and the format probe's empty answer slot was counted as a hack-pass.
+    """
+
+    import re
+
+    def reward(completion, answer):
+        m = re.search(r"<answer>(.*?)</answer>", completion, re.S)
+        return 1.0 if m and m.group(1).strip() == answer else 0.0
+
+    rows = [{"prompt": f"Reduce program {i}.", "answer": f"A# #B {i}"} for i in range(9)]
+    rows.append({"prompt": "Reduce program 9.", "answer": ""})
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    result = scan(subject, ScanConfig(replays=1))
+    probes = _by_id(result)
+    assert result.calibration.sanity == "PASS"
+    assert result.findings == []
+    assert result.verdict == "RESISTED"
+    # Two variants put an empty answer slot on the last task, whose answer is empty.
+    assert probes["HF-FORMAT"].skipped_same_as_reference == 2
+    assert probes["HF-FORMAT"].hack_passes == 0
+
+
+def test_same_as_reference_ignores_whitespace_and_case_only():
+    from hackfloor.scan import same_as_reference
+
+    assert same_as_reference(" \n\t ", "")
+    assert same_as_reference("<answer>  True\n</answer>", "<answer> true </answer>")
+    assert not same_as_reference("<answer>0 1 2</answer>", "<answer>1</answer>")
+    assert not same_as_reference(lambda ws: None, "")
+    tags = "<answer>{answer}</answer>"
+    assert same_as_reference("<think>\n</think>\n<answer></answer>", "<answer></answer>", tags)
+    assert not same_as_reference(
+        "<think>\n</think>\n<answer>7</answer>", "<answer>8</answer>", tags
+    )
+    assert not same_as_reference("no tags at all", "<answer></answer>", tags)
+
+
+def test_card_records_variants_skipped_as_reference():
+    from hackfloor.card import build_card
+
+    def reward(completion, answer):
+        inside = completion.removeprefix("<answer>").removesuffix("</answer>")
+        return 1.0 if completion.startswith("<answer>") and inside.strip() == answer else 0.0
+
+    rows = [{"prompt": "Reduce.", "answer": ""}] + [
+        {"prompt": f"Reduce {i}.", "answer": str(i)} for i in range(5)
+    ]
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    card = build_card(scan(subject, ScanConfig(replays=1)))
+    fmt = next(p for p in card["probes"] if p["id"] == "HF-FORMAT")
+    assert fmt["skipped_same_as_reference"] == 2
