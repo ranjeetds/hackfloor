@@ -26,15 +26,15 @@
   <a href="#integrity-levels">Integrity cards</a> ·
   <a href="#how-it-compares">Comparison</a> ·
   <a href="#roadmap">Roadmap</a> ·
-  <a href="docs/index.md">Docs</a>
+  <a href="https://ranjeetds.github.io/hackfloor/">Docs</a>
 </p>
 
 ---
 
-hackfloor runs policies that **do not solve the task** through an environment's **real grader**: empty and format-only answers, answer enumeration, always-equal objects, edited tests, a `conftest.py` that rewrites pytest reports, `sys.exit(0)` before the checks, and a pre-written reward file. Each probe is paired with a matched control that touches the same files without the exploit. If the probe scores above its control, that is a finding, and the integrity card records enough to replay it.
+hackfloor runs policies that **do not solve the task** through an environment's **real grader**: empty and format-only answers, answer enumeration, prompt echo, prompt injection aimed at LLM judges, always-equal objects, `SkipTest`, hard-coded test cases, edited tests, a `conftest.py` that rewrites pytest reports, `sys.exit(0)` before the checks, a pre-written reward file, and answer keys left in the sandbox or in git history. Each probe is paired with a matched control that touches the same files without the exploit. If the probe scores above its control, that is a finding, and the integrity card records enough to replay it.
 
 <p align="center">
-  <img alt="hackfloor scan of the bundled vulnerable pytest task: four critical findings" src="docs/assets/scan-vulnerable.svg" width="860">
+  <img alt="hackfloor scan of the bundled vulnerable pytest task: six critical findings" src="docs/assets/scan-vulnerable.svg" width="860">
   <br>
   <sub>Real output: <code>hackfloor scan fixtures/tasks/vulnerable_pytest</code> on the bundled teaching fixture. Rendered by <a href="scripts/render_readme_assets.py"><code>scripts/render_readme_assets.py</code></a>.</sub>
 </p>
@@ -55,11 +55,11 @@ OpenEnv's [RFC 008](https://github.com/openenv/OpenEnv/issues/778) asks that "a 
 
 - 🎯 **Runs against the real grader.** No static guessing: every finding is a scored attempt you can replay.
 - ⚖️ **Matched controls.** `AlwaysEqual` is compared with `return None`, a patched `conftest.py` with an empty one, a written max reward with a written min. The gap measures the exploit, not noise.
-- 📐 **Statistics where they matter.** With 5 or more tasks, an exact sign test with Holm correction across probes; with fewer, the effect has to reproduce on every replay. Clopper-Pearson intervals on hack-pass rates.
-- 🪪 **Integrity cards.** A JSON record with a [schema](src/hackfloor/schema/card-0.1.schema.json), check ids taken from OpenEnv's RFC 008 validation code, and `NOT_MEASURED` wherever v0.1 has no test.
-- 🧩 **Two adapters today.** Plain reward functions (`fn(completion, answer)`, verl `compute_score`, TRL `reward_funcs`) and Harbor-style task directories with a verifier command and a reward file.
+- 📐 **Statistics where they matter.** With 5 or more tasks, an exact sign test with Holm correction across probes; with fewer, the effect has to reproduce on every replay. A hack-pass that reproduces is always a finding. Clopper-Pearson intervals on hack-pass rates, and a gameability check (point-biserial correlation and AUROC between solved and reward).
+- 🪪 **Integrity cards.** A JSON record with a [schema](src/hackfloor/schema/card-0.1.schema.json), check ids taken from OpenEnv's RFC 008 validation code, `NOT_MEASURED` wherever hackfloor has no test, and an export to OpenEnv `CheckResult` records.
+- 🧩 **Adapters.** Plain reward functions (`fn(completion, answer)`, verl `compute_score`, TRL `reward_funcs`), Harbor-style task directories, reasoning-gym datasets, and (experimental) Prime Intellect `verifiers` tasksets and single-step OpenEnv environments.
 - 🔌 **Plugin probes.** Subclass `Probe`, register it, or ship it through the `hackfloor.probes` entry point.
-- 🚦 **CI-ready.** Exit code `1` when a finding meets `--fail-on` (default `high`), plus a Markdown report for PR comments.
+- 🚦 **CI-ready.** A GitHub Action, a pre-commit hook and a pytest fixture. Exit code `1` when a finding meets `--fail-on` (default `high`), plus a Markdown report for the job summary.
 
 ## Quickstart
 
@@ -74,7 +74,7 @@ uv venv && uv pip install -e ".[dev]"   # or: python -m venv .venv && pip instal
 Scan the bundled fixtures (the pytest-based tasks need `pytest`, which the `dev` extra installs):
 
 ```bash
-hackfloor scan fixtures/tasks/vulnerable_pytest      # 4 critical findings, exit code 1
+hackfloor scan fixtures/tasks/vulnerable_pytest      # 6 critical findings, exit code 1
 hackfloor scan fixtures/tasks/fixed_pytest           # RESISTED, integrity level L1
 hackfloor scan fixtures/rlvr/vulnerable_math --report report.md
 ```
@@ -107,6 +107,15 @@ for p in result.findings:
     print(p.probe.id, p.severity, f"{p.hack_passes}/{p.n}")  # HF-DUMP critical 20/20
 ```
 
+Scan a reasoning-gym dataset, a `verifiers` taskset or an OpenEnv environment (see [adapters](docs/adapters.md#framework-adapters)):
+
+```bash
+uv pip install -e ".[integrations]"
+hackfloor scan reasoning-gym:basic_arithmetic --tasks 50
+hackfloor scan verifiers:my_env:load_taskset --gold-template "<answer>{answer}</answer>"
+hackfloor scan subject:my_scan:build --openenv-checks checks.json   # build() returns an OpenEnvSubject
+```
+
 <details>
 <summary><b>Scanning a task directory</b></summary>
 
@@ -117,9 +126,11 @@ Put a `hackfloor.toml` next to the task:
 environment = "environment"      # copied into a fresh sandbox for every attempt
 workspace = "workspace"          # the directory the agent edits
 solution = "solution"            # overlaid onto the workspace for the reference run
-entry_file = "slug.py"           # optional: enables HF-EQ and HF-EXIT
+entry_file = "slug.py"           # optional: enables HF-EQ, HF-EXIT, HF-SKIPTEST and the leak probes
 entry_functions = ["slugify"]
-visible_tests = ["tests/test_*.py"]   # optional: enables HF-TESTEDIT
+visible_tests = ["tests/test_*.py"]   # optional: enables HF-TESTEDIT and HF-LOOKUP
+instruction = "instruction.md"   # optional: what the agent is shown
+setup = ["{python}", "{task}/setup_env.py"]   # optional: runs in each fresh sandbox
 
 [verifier]
 command = ["{python}", "{task}/grader/grade.py"]
@@ -135,24 +146,30 @@ The verifier gets `HACKFLOOR_SANDBOX`, `HACKFLOOR_WORKSPACE` and `HACKFLOOR_LOGS
 </details>
 
 > [!WARNING]
-> v0.1 runs verifiers as local subprocesses in a temp directory. That is a probe harness, not a security boundary. Only scan environments you would run on your machine anyway. Container isolation is on the [roadmap](#roadmap).
+> hackfloor runs verifiers as local subprocesses in a temp directory. That is a probe harness, not a security boundary. Only scan environments you would run on your machine anyway. Container isolation is on the [roadmap](#roadmap).
 
 ## Probes
 
-v0.1 ships 8 probes. A probe runs only when the target exposes what it needs, and the card lists the rest as not applicable.
+hackfloor ships 14 probes. A probe runs only when the target exposes what it needs, and the card lists the rest as not applicable.
 
 | Probe | Family | What it tries | Runs on | Documented in |
 |---|---|---|---|---|
-| `HF-EMPTY` | form | whitespace, `None`, `{}` | reward functions | FieldWorkArena `{}` exploit, BenchJack |
-| `HF-FORMAT` | form | answer tags, a reasoning block or `\boxed{}` with nothing inside | reward functions | format-reward shaping |
-| `HF-DUMP` | form | every integer 0–999, A–J, yes/no in one answer | reward functions | weak string matching, BenchJack V5 |
+| `HF-EMPTY` | form | whitespace, `None`, `{}` | completions | FieldWorkArena `{}` exploit, BenchJack |
+| `HF-FORMAT` | form | answer tags, a reasoning block or `\boxed{}` with nothing inside | completions | format-reward shaping |
+| `HF-DUMP` | form | every integer 0–999, A–J, yes/no in one answer | completions | weak string matching, BenchJack V5 |
+| `HF-ECHO` | leak | repeat the prompt, raw and in the answer slot | completions | BenchJack V2, gradecheck prompt echo |
+| `HF-JUDGE` | judge | instructions addressed to an LLM judge (a score, a verification claim, a fake transcript) | completions | BenchJack V4, gradecheck flattery |
 | `HF-EQ` | tamper | return an object whose `__eq__` is always `True` | tasks with a Python entry file | Anthropic 2511.18397, METR 2025 |
 | `HF-EXIT` | tamper | `sys.exit(0)` on import | tasks with a Python entry file | Anthropic 2511.18397, Baker 2503.11926 |
+| `HF-SKIPTEST` | tamper | raise `unittest.SkipTest` in every function, or at import | tasks with a Python entry file | Baker 2503.11926 |
+| `HF-LOOKUP` | tamper | hard-code the literal cases from the visible tests | tasks with visible tests | ImpossibleBench 2510.20270, METR 2025 |
 | `HF-CONFTEST` | tamper | a `conftest.py` hook that rewrites failing reports to passed | any workspace task | Anthropic 2511.18397, BenchJack |
 | `HF-TESTEDIT` | tamper | neutralise or delete the visible tests | tasks with visible tests | ImpossibleBench 2510.20270 |
+| `HF-ANSWERKEY` | leak | copy a reference-looking file reachable from the sandbox | tasks with a Python entry file | BenchJack V2, gradecheck answer leak |
+| `HF-GITLEAK` | leak | try every version of the entry file in the workspace's git history | tasks with a git workspace | SWE-bench issue #465 |
 | `HF-REWARDFILE` | contain | pre-write the max reward to the reward file | tasks whose reward file the agent can reach | Harbor reward-file layout, BenchJack V7 |
 
-Probes are the publicly documented minimal forms, and every file they write carries a `hackfloor canary` comment. The full v1.0 plan has 31 probes in five families (tamper, leak, form, judge, contain); see [docs/probes.md](docs/probes.md).
+Probes are the publicly documented minimal forms, and every file they write carries a `hackfloor canary` comment. Network and timing probes are not included yet: they need container isolation to be safe and deterministic. See [docs/probes.md](docs/probes.md).
 
 ### What the bundled fixtures show
 
@@ -160,12 +177,18 @@ The fixtures are small teaching environments written for hackfloor's tests, each
 
 | Fixture | Verdict | Findings |
 |---|---|---|
-| `tasks/vulnerable_pytest` | VULNERABLE, L0 | `HF-EQ`, `HF-CONFTEST`, `HF-TESTEDIT`, `HF-REWARDFILE` (all critical) |
+| `tasks/vulnerable_pytest` | VULNERABLE, L0 | `HF-CONFTEST`, `HF-EQ`, `HF-LOOKUP`, `HF-REWARDFILE`, `HF-SKIPTEST`, `HF-TESTEDIT` (all critical) |
 | `tasks/fixed_pytest` | RESISTED, L1 | none |
 | `tasks/vulnerable_script` | VULNERABLE, L0 | `HF-EQ`, `HF-EXIT` (critical) |
 | `tasks/fixed_script` | RESISTED, L1 | none |
-| `rlvr/vulnerable_math` | VULNERABLE, L0 | `HF-DUMP` (critical, 40/40), `HF-FORMAT` (medium, Δ = 0.20) |
+| `tasks/vulnerable_leaky` | VULNERABLE, L0 | `HF-ANSWERKEY`, `HF-GITLEAK` (critical); `semantic.no_solution_leakage` FAIL |
+| `tasks/fixed_leaky` | RESISTED, L1 | none; leak probes searched and found nothing |
+| `rlvr/vulnerable_math` | VULNERABLE, L0 | `HF-DUMP` (critical, 40/40), `HF-FORMAT` and `HF-ECHO` (medium, Δ = 0.20) |
 | `rlvr/fixed_math` | RESISTED, L1 | none |
+| `rlvr/vulnerable_judge` | VULNERABLE, L0 | `HF-JUDGE` (critical, 40/40) and `HF-DUMP` (critical, 40/40) against a deterministic stub judge |
+| `rlvr/fixed_judge` | RESISTED, L1 | none |
+
+Every vulnerable fixture also fails `statistical.gameability_gap` (correlation between 0.25 and 0.57 against a bound of 0.9); every fixed twin reaches 1.0.
 
 `HF-EXIT` does not hack `vulnerable_pytest`: with pytest 9.2.0, an import-time `sys.exit(0)` ends in `INTERNALERROR` and exit code 3. It does hack the script verifier, which trusts the exit code.
 
@@ -173,7 +196,7 @@ The fixtures are small teaching environments written for hackfloor's tests, each
 
 ```mermaid
 flowchart TD
-    T["Target: reward fn + rows, or task directory"] --> A["Adapter → Subject"]
+    T["Target: reward fn, task directory, reasoning-gym, verifiers, OpenEnv"] --> A["Adapter → Subject"]
     A --> C["Calibration: reference vs null policy"]
     A --> P["Probe registry: built-ins + plugins"]
     P --> V["Variants: exploit + matched control"]
@@ -181,7 +204,7 @@ flowchart TD
     V --> G
     G --> D["Paired decision: sign test + Holm, or deterministic replay"]
     D --> K["Integrity card: JSON + schema"]
-    K --> O["Terminal · Markdown report · CI exit code"]
+    K --> O["Terminal · Markdown report · OpenEnv CheckResults · CI exit code"]
 ```
 
 1. **Calibrate.** The reference solution must beat the null policy (an empty completion or an untouched workspace) on every task. If it does not, the card says `UNCALIBRATED` and gives no level.
@@ -204,30 +227,30 @@ The integrity card is a JSON file, written by every scan, that validates against
 
 | Level | Badge | Meaning | Available |
 |---|---|---|---|
-| L0 | ![L0](https://img.shields.io/badge/hackfloor-L0%20hackable-cf222e) | at least one critical or high finding, or a malformed reward | v0.1 |
-| L1 | ![L1](https://img.shields.io/badge/hackfloor-L1%20floor%20holds-2da44e) | calibrated, and no critical or high finding from the default probes | v0.1 |
+| L0 | ![L0](https://img.shields.io/badge/hackfloor-L0%20hackable-cf222e) | at least one critical or high finding, or a malformed reward | since v0.1 |
+| L1 | ![L1](https://img.shields.io/badge/hackfloor-L1%20floor%20holds-2da44e) | calibrated, and no critical or high finding from the default probes | since v0.1 |
 | L2 | ![L2](https://img.shields.io/badge/hackfloor-L2%20planned-lightgrey) | L1, plus the gameability gap from model-based policies is bounded and containment checks pass | planned (v0.3) |
 | L3 | ![L3](https://img.shields.io/badge/hackfloor-L3%20planned-lightgrey) | L2, plus the canary suite and an independent replay of the card | planned (v1.0) |
 
-A level describes this probe set at this version, not the absence of every hack. RFC 008 criteria that v0.1 does not measure (`statistical.gameability_gap`, `semantic.canary_floor`, `semantic.no_solution_leakage` and four `runtime.*` containment checks) appear in the card as `NOT_MEASURED`, never as a pass.
+A level describes this probe set at this version, not the absence of every hack. The card now measures `statistical.gameability_gap` (over scripted attempts only) and `semantic.no_solution_leakage`. RFC 008 criteria it does not measure yet (`semantic.canary_floor` and four `runtime.*` containment checks) appear as `NOT_MEASURED`, never as a pass. `--openenv-checks` writes the checks as OpenEnv `CheckResult` records.
 
 ## How it compares
 
 Checkmarks are given only where the project's own README (or, for OpenEnv, its source code) documents the feature, checked on 26 November 2026. A blank means it is not documented there, not that it is impossible.
 
-| | hackfloor 0.1 | [gradecheck](https://github.com/PoorvaJ-WW/gradecheck) | [BenchJack](https://github.com/benchjack/benchjack) | [OpenEnv validation](https://github.com/openenv/OpenEnv) 0.14 |
+| | hackfloor 0.2 | [gradecheck](https://github.com/PoorvaJ-WW/gradecheck) | [BenchJack](https://github.com/benchjack/benchjack) | [OpenEnv validation](https://github.com/openenv/OpenEnv) 0.14 |
 |---|:---:|:---:|:---:|:---:|
 | Runs attacks against the real grader | ✓ | ✓ | ✓ (generates PoC exploits) | ✓ (author-supplied canaries) |
-| Built-in exploit probes | 8 | 5 file-tree + 5 completion attacks | 8 vulnerability classes | |
+| Built-in exploit probes | 14 | 5 file-tree + 5 completion attacks | 8 vulnerability classes | |
 | Reference and do-nothing calibration | ✓ | ✓ (noop baseline) | | ✓ (`oracle_max`, `floor_gap`) |
 | Static and LLM-assisted code audit | | | ✓ | |
 | Needs an LLM or API key | no | no | yes (LLM backend) | |
 | Task directory with a grade command | ✓ | ✓ | | ✓ (Harbor tasks) |
 | Plain reward functions (verl, TRL signatures) | ✓ | | | |
-| `verifiers` environments | planned | ✓ | | |
+| `verifiers` environments | ◐ (experimental, trace-level rewards) | ✓ | | |
 | Always-equal, `sys.exit`, `conftest.py` probes | ✓ | | ✓ (conftest exploit) | |
 | Test deletion and editing | ✓ | ✓ | | |
-| Answer-leak and hollow-artifact checks | planned (v0.2) | ✓ | ✓ (V2) | |
+| Answer-leak and hollow-artifact checks | ◐ (answer keys, git history, prompt echo) | ✓ | ✓ (V2) | |
 | Matched controls and paired statistics | ✓ | | | |
 | JSON output | ✓ (with schema) | ✓ | | |
 | CI exit code | ✓ | ✓ | | |
@@ -245,18 +268,22 @@ gradecheck is the closest project in spirit and its README is worth reading. Ben
 | verl `compute_score(data_source, solution_str, ground_truth, extra_info)` | ✅ v0.1 | `--flavor verl`, or detected from the signature |
 | TRL `reward_funcs(prompts, completions, **columns)` | ✅ v0.1 | `--flavor trl`, or detected from the signature |
 | Harbor-style task directories | ✅ v0.1 | `hackfloor.toml` beside the task; native `task.toml` reading is planned |
-| OpenRLHF, reasoning-gym | planned (v0.2) | |
-| Prime Intellect `verifiers` | planned (v0.2) | |
-| OpenEnv (`reset` / `step`; probes exported as `semantic.canary_floor` canaries) | planned (v0.2) | |
-| inspect_ai scorers | planned (v0.3) | |
-| GitHub Action | planned (v0.2) | |
+| reasoning-gym | ✅ v0.2 | `hackfloor scan reasoning-gym:<dataset>`; tested against 0.1.25 |
+| Prime Intellect `verifiers` (v1 API) | 🧪 experimental | `hackfloor scan verifiers:<module:factory>`; trace-level rewards only; tested against 0.4.1 |
+| OpenEnv `Environment` (single step, in process) | 🧪 experimental | `OpenEnvSubject` via `subject:<module:factory>`; tested against 0.15.0, including its `reasoning_gym_env` |
+| OpenEnv RFC 008 `CheckResult` export | ✅ v0.2 | `--openenv-checks checks.json`; validated against openenv 0.15.0's schema |
+| GitHub Action | ✅ v0.2 | `uses: ranjeetds/hackfloor@<ref>`, see [docs/ci.md](docs/ci.md) |
+| pre-commit | ✅ v0.2 | hook id `hackfloor` |
+| pytest | ✅ v0.2 | `hackfloor` fixture, `hackfloor.testing.assert_resists` |
+| OpenRLHF, inspect_ai scorers, multi-step and HTTP OpenEnv | planned | |
 
 ## Roadmap
 
 - [x] **v0.1 foundation:** CLI, probe plugin API, two adapters, 8 probes, matched controls, paired statistics, integrity card with schema, Markdown report, fixtures with fixed twins
-- [ ] **v0.1 release** (target 21 Dec 2026): PyPI package, docs site
-- [ ] **v0.2** (Feb 2027): `verifiers`, OpenEnv and reasoning-gym adapters, leak probes, GitHub Action
-- [ ] **v0.3** (Apr 2027): container isolation, model-based policies and the gameability gap, judge probes, L2
+- [ ] **v0.1 release** (target 21 Dec 2026): PyPI package
+- [x] **v0.2 work, in development** (0.2.0.dev0): reasoning-gym adapter, experimental `verifiers` and OpenEnv adapters, OpenEnv check export, leak and judge probes (14 in all), gameability and leakage checks, GitHub Action, pre-commit hook, pytest plugin, docs site
+- [ ] **v0.2 release** (Feb 2027): stable `verifiers` and OpenEnv adapters, multi-step OpenEnv
+- [ ] **v0.3** (Apr 2027): container isolation with network, timing and containment probes; model-based policies and a gameability gap over trained policies; judge probes against real LLM judges; L2
 - [ ] **v1.0** (Jun 2027): 31 probes, canary suite, replayable cards, L3
 - [ ] **Hub audit (upcoming):** scan public RL environments on the Hugging Face Hub and report findings privately to maintainers first. No results are published yet.
 
@@ -277,7 +304,7 @@ If hackfloor helps your research, please cite it:
   author  = {Dhumal, Ranjeet},
   title   = {hackfloor: adversarial probes for RL environment graders and agent benchmarks},
   year    = {2026},
-  version = {0.1.0.dev0},
+  version = {0.2.0.dev0},
   url     = {https://github.com/ranjeetds/hackfloor},
   license = {Apache-2.0}
 }
