@@ -1,78 +1,78 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="980" height="422" viewBox="0 0 980 422" role="img" aria-label="Integrity cards before and after fixing the verifier">
-<rect width="980" height="422" fill="#ffffff" rx="14"/>
-<rect x="20" y="20" width="450" height="382" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-<text x="44" y="52" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">INTEGRITY CARD · TASK</text>
-<text x="44" y="82" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="20" font-weight="700" fill="#1f2328">vulnerable_pytest</text>
-<rect x="44" y="98" width="114.0" height="26" rx="6" fill="#cf222e"/>
+<rect width="980" height="422" fill="#F4F3F0" rx="14"/>
+<rect x="20" y="20" width="450" height="382" rx="12" fill="#EBEAE6" stroke="#D4D2CC"/>
+<text x="44" y="52" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">INTEGRITY CARD · TASK</text>
+<text x="44" y="82" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="20" font-weight="700" fill="#2C2D2B">vulnerable_pytest</text>
+<rect x="44" y="98" width="114.0" height="26" rx="6" fill="#A14D48"/>
 <text x="53" y="116" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" fill="#ffffff">VULNERABLE</text>
-<text x="446" y="58" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#59636e">INTEGRITY LEVEL</text>
-<text x="446" y="104" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#cf222e">L0</text>
-<line x1="44" y1="140" x2="446" y2="140" stroke="#d0d7de"/>
-<circle cx="52" cy="161" r="8" fill="#cf222e"/><path d="M48.5 157.5 l7 7 M55.5 157.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-CONFTEST</text>
-<text x="198" y="166" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">conftest.py report rewrite</text>
-<text x="446" y="166" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<circle cx="52" cy="189" r="8" fill="#cf222e"/><path d="M48.5 185.5 l7 7 M55.5 185.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="194" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-EQ</text>
-<text x="198" y="194" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Always-equal object</text>
-<text x="446" y="194" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<circle cx="52" cy="217" r="8" fill="#1a7f37"/><path d="M48 217 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-EXIT</text>
-<text x="198" y="222" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Exit 0 before the checks r…</text>
-<text x="446" y="222" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="52" cy="245" r="8" fill="#cf222e"/><path d="M48.5 241.5 l7 7 M55.5 241.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="250" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-LOOKUP</text>
-<text x="198" y="250" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Hard-code the visible test…</text>
-<text x="446" y="250" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<circle cx="52" cy="273" r="8" fill="#cf222e"/><path d="M48.5 269.5 l7 7 M55.5 269.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="278" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-REWARDFILE</text>
-<text x="198" y="278" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Pre-write the reward file</text>
-<text x="446" y="278" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<circle cx="52" cy="301" r="8" fill="#cf222e"/><path d="M48.5 297.5 l7 7 M55.5 297.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-SKIPTEST</text>
-<text x="198" y="306" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Raise SkipTest</text>
-<text x="446" y="306" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<circle cx="52" cy="329" r="8" fill="#cf222e"/><path d="M48.5 325.5 l7 7 M55.5 325.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="70" y="334" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-TESTEDIT</text>
-<text x="198" y="334" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Edit the visible tests</text>
-<text x="446" y="334" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#cf222e">critical</text>
-<text x="44" y="374" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#59636e">calibration PASS · 7 of 12 RFC 008 criteria measured by v0.2</text>
-<path d="M476 211 h24 m-8 -8 l8 8 l-8 8" stroke="#59636e" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="510" y="20" width="450" height="382" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
-<text x="534" y="52" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">INTEGRITY CARD · TASK</text>
-<text x="534" y="82" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="20" font-weight="700" fill="#1f2328">fixed_pytest</text>
-<rect x="534" y="98" width="94.8" height="26" rx="6" fill="#1a7f37"/>
+<text x="446" y="58" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#5F615E">INTEGRITY LEVEL</text>
+<text x="446" y="104" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#A14D48">L0</text>
+<line x1="44" y1="140" x2="446" y2="140" stroke="#D4D2CC"/>
+<circle cx="52" cy="161" r="8" fill="#A14D48"/><path d="M48.5 157.5 l7 7 M55.5 157.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-CONFTEST</text>
+<text x="198" y="166" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">conftest.py report rewrite</text>
+<text x="446" y="166" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<circle cx="52" cy="189" r="8" fill="#A14D48"/><path d="M48.5 185.5 l7 7 M55.5 185.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="194" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-EQ</text>
+<text x="198" y="194" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Always-equal object</text>
+<text x="446" y="194" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<circle cx="52" cy="217" r="8" fill="#3D5F5C"/><path d="M48 217 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-EXIT</text>
+<text x="198" y="222" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Exit 0 before the checks r…</text>
+<text x="446" y="222" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="52" cy="245" r="8" fill="#A14D48"/><path d="M48.5 241.5 l7 7 M55.5 241.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="250" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-LOOKUP</text>
+<text x="198" y="250" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Hard-code the visible test…</text>
+<text x="446" y="250" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<circle cx="52" cy="273" r="8" fill="#A14D48"/><path d="M48.5 269.5 l7 7 M55.5 269.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="278" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-REWARDFILE</text>
+<text x="198" y="278" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Pre-write the reward file</text>
+<text x="446" y="278" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<circle cx="52" cy="301" r="8" fill="#A14D48"/><path d="M48.5 297.5 l7 7 M55.5 297.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-SKIPTEST</text>
+<text x="198" y="306" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Raise SkipTest</text>
+<text x="446" y="306" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<circle cx="52" cy="329" r="8" fill="#A14D48"/><path d="M48.5 325.5 l7 7 M55.5 325.5 l-7 7" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="70" y="334" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-TESTEDIT</text>
+<text x="198" y="334" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Edit the visible tests</text>
+<text x="446" y="334" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#A14D48">critical</text>
+<text x="44" y="374" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#5F615E">calibration PASS · 7 of 12 RFC 008 criteria measured by v0.2</text>
+<path d="M476 211 h24 m-8 -8 l8 8 l-8 8" stroke="#5F615E" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="510" y="20" width="450" height="382" rx="12" fill="#EBEAE6" stroke="#D4D2CC"/>
+<text x="534" y="52" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">INTEGRITY CARD · TASK</text>
+<text x="534" y="82" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="20" font-weight="700" fill="#2C2D2B">fixed_pytest</text>
+<rect x="534" y="98" width="94.8" height="26" rx="6" fill="#3D5F5C"/>
 <text x="543" y="116" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="700" fill="#ffffff">RESISTED</text>
-<text x="936" y="58" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#59636e">INTEGRITY LEVEL</text>
-<text x="936" y="104" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#1a7f37">L1</text>
-<line x1="534" y1="140" x2="936" y2="140" stroke="#d0d7de"/>
-<circle cx="542" cy="161" r="8" fill="#1a7f37"/><path d="M538 161 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-CONFTEST</text>
-<text x="688" y="166" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">conftest.py report rewrite</text>
-<text x="936" y="166" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="189" r="8" fill="#1a7f37"/><path d="M538 189 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="194" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-EQ</text>
-<text x="688" y="194" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Always-equal object</text>
-<text x="936" y="194" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="217" r="8" fill="#1a7f37"/><path d="M538 217 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-EXIT</text>
-<text x="688" y="222" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Exit 0 before the checks r…</text>
-<text x="936" y="222" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="245" r="8" fill="#1a7f37"/><path d="M538 245 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="250" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-LOOKUP</text>
-<text x="688" y="250" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Hard-code the visible test…</text>
-<text x="936" y="250" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="273" r="8" fill="#1a7f37"/><path d="M538 273 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="278" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-REWARDFILE</text>
-<text x="688" y="278" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Pre-write the reward file</text>
-<text x="936" y="278" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="301" r="8" fill="#1a7f37"/><path d="M538 301 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-SKIPTEST</text>
-<text x="688" y="306" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Raise SkipTest</text>
-<text x="936" y="306" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<circle cx="542" cy="329" r="8" fill="#1a7f37"/><path d="M538 329 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="560" y="334" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#1f2328">HF-TESTEDIT</text>
-<text x="688" y="334" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e">Edit the visible tests</text>
-<text x="936" y="334" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#1a7f37">resisted</text>
-<text x="534" y="374" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#59636e">calibration PASS · 7 of 12 RFC 008 criteria measured by v0.2</text>
+<text x="936" y="58" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#5F615E">INTEGRITY LEVEL</text>
+<text x="936" y="104" text-anchor="end" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#3D5F5C">L1</text>
+<line x1="534" y1="140" x2="936" y2="140" stroke="#D4D2CC"/>
+<circle cx="542" cy="161" r="8" fill="#3D5F5C"/><path d="M538 161 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-CONFTEST</text>
+<text x="688" y="166" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">conftest.py report rewrite</text>
+<text x="936" y="166" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="189" r="8" fill="#3D5F5C"/><path d="M538 189 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="194" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-EQ</text>
+<text x="688" y="194" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Always-equal object</text>
+<text x="936" y="194" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="217" r="8" fill="#3D5F5C"/><path d="M538 217 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-EXIT</text>
+<text x="688" y="222" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Exit 0 before the checks r…</text>
+<text x="936" y="222" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="245" r="8" fill="#3D5F5C"/><path d="M538 245 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="250" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-LOOKUP</text>
+<text x="688" y="250" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Hard-code the visible test…</text>
+<text x="936" y="250" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="273" r="8" fill="#3D5F5C"/><path d="M538 273 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="278" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-REWARDFILE</text>
+<text x="688" y="278" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Pre-write the reward file</text>
+<text x="936" y="278" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="301" r="8" fill="#3D5F5C"/><path d="M538 301 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-SKIPTEST</text>
+<text x="688" y="306" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Raise SkipTest</text>
+<text x="936" y="306" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<circle cx="542" cy="329" r="8" fill="#3D5F5C"/><path d="M538 329 l3 3 l5 -6" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="560" y="334" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13.5" fill="#2C2D2B">HF-TESTEDIT</text>
+<text x="688" y="334" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5F615E">Edit the visible tests</text>
+<text x="936" y="334" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="700" fill="#3D5F5C">resisted</text>
+<text x="534" y="374" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#5F615E">calibration PASS · 7 of 12 RFC 008 criteria measured by v0.2</text>
 </svg>
