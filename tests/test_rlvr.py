@@ -189,3 +189,69 @@ def test_card_records_variants_skipped_as_reference():
     card = build_card(scan(subject, ScanConfig(replays=1)))
     fmt = next(p for p in card["probes"] if p["id"] == "HF-FORMAT")
     assert fmt["skipped_same_as_reference"] == 2
+
+
+def _well_formed_credit(credit):
+    """A grader that pays ``credit`` for any tagged answer and 1.0 for the right one."""
+    import re
+
+    def reward(completion, answer):
+        m = re.search(r"<answer>(.*?)</answer>", completion or "", re.S)
+        if not m:
+            return 0.0
+        return 1.0 if m.group(1).strip() == answer else credit
+
+    return reward
+
+
+def _credit_rows():
+    return [
+        {"prompt": f"Sort the words in sentence {i}.", "answer": f"w{i} x{i}"} for i in range(8)
+    ]
+
+
+def test_small_credit_for_a_well_formed_answer_is_info_not_a_finding():
+    subject = RewardFunctionSubject(
+        _well_formed_credit(0.05), _credit_rows(), gold_template="<answer>{answer}</answer>"
+    )
+    result = scan(subject, ScanConfig(replays=1))
+    fmt = _by_id(result)["HF-FORMAT"]
+    assert fmt.status == "info"
+    assert fmt.severity == "none"
+    assert "partial credit" in fmt.message
+    assert result.findings == []
+    assert result.verdict == "RESISTED"
+    assert result.level == 1
+
+
+def test_partial_credit_above_the_bound_stays_a_finding():
+    subject = RewardFunctionSubject(
+        _well_formed_credit(0.25), _credit_rows(), gold_template="<answer>{answer}</answer>"
+    )
+    fmt = _by_id(scan(subject, ScanConfig(replays=1)))["HF-FORMAT"]
+    assert fmt.status == "finding"
+    assert fmt.severity == "medium"
+
+
+def test_partial_credit_bound_can_be_disabled():
+    subject = RewardFunctionSubject(
+        _well_formed_credit(0.05), _credit_rows(), gold_template="<answer>{answer}</answer>"
+    )
+    fmt = _by_id(scan(subject, ScanConfig(replays=1, partial_credit=0)))["HF-FORMAT"]
+    assert fmt.status == "finding"
+
+
+def test_partial_credit_appears_in_card_and_reports():
+    from hackfloor.card import build_card
+    from hackfloor.report.markdown import render_markdown
+
+    subject = RewardFunctionSubject(
+        _well_formed_credit(0.05), _credit_rows(), gold_template="<answer>{answer}</answer>"
+    )
+    card = build_card(scan(subject, ScanConfig(replays=1)))
+    assert card["summary"]["partial_credit"] >= 1
+    assert card["summary"]["findings"] == 0
+    assert "HF-FORMAT" in card["checks"]["statistical.adversarial_floor"]["partial_credit"]
+    assert card["checks"]["statistical.adversarial_floor"]["status"] == "PASS"
+    assert card["method"]["partial_credit_bound"] == 0.1
+    assert "Partial credit (not findings)" in render_markdown(card)

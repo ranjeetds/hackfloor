@@ -12,6 +12,7 @@ from rich.text import Text
 _ICON = {
     "finding": ("FAIL", "bold red"),
     "resisted": ("PASS", "green"),
+    "info": ("INFO", "cyan"),
     "flaky": ("WARN", "yellow"),
     "not_applicable": ("n/a", "dim"),
     "error": ("ERROR", "magenta"),
@@ -98,6 +99,16 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
     console.print(verdict)
     for p in card["probes"]:
         ev = p.get("evidence")
+        if p["status"] == "info" and ev:
+            console.print(
+                Text.assemble(
+                    ("  ↳ ", "dim"),
+                    (f"{p['id']:<14}", "bold cyan"),
+                    ("partial credit only: ", "dim"),
+                    (f"{ev['variant']} scored {ev['exploit_reward']:.2f}", ""),
+                    (f"  reference {ev['gold_reward']:.2f}", "dim"),
+                )
+            )
         if p["status"] == "finding" and ev:
             where = f"  (task {ev['task']})" if s["tasks"] > 1 else ""
             console.print(

@@ -24,6 +24,11 @@ All notable changes are recorded here. The format follows
 
 ### Added
 
+- Bounded partial credit is reported as `info`, not as a finding: a significant effect with no
+  hack-pass whose best exploit reward is at most 10% of the reward range. The bound is set
+  with `--partial-credit` (0 disables it). The card gains `summary.partial_credit`,
+  `method.partial_credit_bound` and a `partial_credit` list in
+  `statistical.adversarial_floor`; the probe status enum gains `info`.
 - Docs pages: concepts in plain words (glossary and how a finding is decided), background,
   bundled fixtures and their results, comparison with related tools, and roadmap. The
   supported-targets table is now in the adapters page, and responsible use is in the threat

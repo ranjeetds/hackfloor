@@ -68,7 +68,7 @@ def _probe_entry(r: ProbeResult) -> dict[str, Any]:
         }
     )
     ex = r.example()
-    if ex is not None and r.status in ("finding", "flaky"):
+    if ex is not None and r.status in ("finding", "info", "flaky"):
         entry["evidence"] = {
             "task": ex.task_id,
             "variant": ex.variant,
@@ -165,6 +165,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
             "FAIL" if floor_findings else ("PASS" if floor_ran else "SKIP"),
             probes_run=[p.probe.id for p in floor_ran],
             findings=[p.probe.id for p in floor_findings],
+            partial_credit=[p.probe.id for p in floor_ran if p.status == "info"],
             **(
                 {}
                 if floor_findings or not clean_n
@@ -203,6 +204,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
             "tasks": len(result.tasks),
             "probes_run": sum(p.status not in ("not_applicable", "error") for p in result.probes),
             "findings": len(result.findings),
+            "partial_credit": len(result.partial_credit),
             "worst_severity": result.worst_severity,
             "seconds": round(result.seconds, 2),
         },
@@ -218,6 +220,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
             "replays": result.config.replays,
             "alpha": result.config.alpha,
             "min_floor_gap": result.config.delta,
+            "partial_credit_bound": result.config.partial_credit,
             "min_tasks_for_sign_test": result.config.min_tasks_for_test,
             "seed": result.config.seed,
             "probe_set": hashlib.sha256(",".join(probe_ids).encode()).hexdigest()[:12],

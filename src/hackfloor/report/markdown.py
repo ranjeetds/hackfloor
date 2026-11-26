@@ -7,6 +7,7 @@ from typing import Any
 _STATUS = {
     "finding": "**FAIL**",
     "resisted": "PASS",
+    "info": "INFO",
     "flaky": "WARN",
     "not_applicable": "n/a",
     "error": "ERROR",
@@ -75,6 +76,22 @@ def render_markdown(card: dict[str, Any]) -> str:
                 f"(95% CI {_fmt(p['floor_gap']['ci95'][0])} to {_fmt(p['floor_gap']['ci95'][1])}).",
                 "",
             ]
+    partial = [p for p in card["probes"] if p["status"] == "info"]
+    if partial:
+        lines += [
+            "## Partial credit (not findings)",
+            "",
+            "These probes earned a small, bounded reward without solving the task. This is often",
+            "intended (credit for a well-formed answer). It does not change the verdict.",
+            "",
+        ]
+        for p in partial:
+            ev = p.get("evidence", {})
+            lines.append(
+                f"- `{p['id']}`: variant `{ev.get('variant')}` scored "
+                f"{_fmt(ev.get('exploit_reward'))} (reference {_fmt(ev.get('gold_reward'))})."
+            )
+        lines.append("")
     lines += ["## Checks", "", "| Check | Status |", "|---|---|"]
     for key, chk in card["checks"].items():
         lines.append(f"| `{key}` | {chk['status']} |")

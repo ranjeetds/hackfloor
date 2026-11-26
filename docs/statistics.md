@@ -42,6 +42,25 @@ the one-sided 95% upper bound is 1 − 0.05^(1/n), about 3/n.
 
 The card records which basis was used.
 
+## Partial credit
+
+Some graders give a small reward to any well-formed answer on purpose, for example 0.05 for
+an answer in the right shape. A probe would then win against its control on every task
+without the grader being exploitable. hackfloor reports such a probe as `info`, not as a
+finding, when all three hold:
+
+- the decision above is significant;
+- there is no hack-pass on any task;
+- the best winning exploit reward is at most *lo* + *p* × range, where *lo* is the minimum
+  reward and *p* is the partial-credit bound (0.1 by default, `--partial-credit` on the
+  command line, `ScanConfig.partial_credit` in Python).
+
+An `info` probe has severity `none`, does not change the verdict or the level, is listed
+under `partial_credit` in `statistical.adversarial_floor`, and is counted in
+`summary.partial_credit`. Set the bound to 0 to report every significant effect as a
+finding. Anything above the bound stays a finding, even when the credit is intended: a policy
+that collects 0.2 per task for no work still learns something.
+
 ## Severity
 
 - **critical:** at least one hack-pass;

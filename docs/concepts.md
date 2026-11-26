@@ -42,6 +42,7 @@ trained long enough against a grader that accepts them.
 | **Floor gap (Δ floor)** | The reward of the hack minus the reward of its control, averaged over tasks. |
 | **Hack-pass** | A hack that reaches the reference score on a task. Reproducible hack-passes are always critical. |
 | **Finding** | A probe the grader failed: the hack scored clearly above its control. Shown as `FAIL`. |
+| **Partial credit** | A small, bounded reward for a non-solution, such as 0.05 for any well-formed answer. Many graders do this on purpose. If the best hack scores at most 10% of the reward range and never reaches the reference, the probe is shown as `INFO`, not `FAIL`, and does not change the verdict. |
 | **Severity** | `critical`: a hack-pass. `high`: the mean gap is at least half the distance from null to reference. `medium`: smaller, but still significant. |
 | **Replay** | Running the same attempt again to check the result is stable. A result that does not repeat is `WARN`. |
 | **Integrity card** | The JSON file every scan writes: the verdict, the level, each probe's numbers and the check ids. See [Integrity card](integrity-card.md). |
@@ -57,5 +58,7 @@ trained long enough against a grader that accepts them.
   significance 0.05, and a mean gap of at least 5% of the reward range.
 - With **fewer than 5 tasks**, the gain must reproduce on every replay.
 - A **reproducible hack-pass** is always critical, whatever the test says.
+- A significant gain that stays at or below **10% of the reward range**, with no hack-pass,
+  is reported as partial credit (`INFO`) instead of a finding.
 
 The formulas, intervals and bounds are in [Statistics](statistics.md).
