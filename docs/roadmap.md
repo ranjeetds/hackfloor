@@ -5,7 +5,7 @@
 - [x] **v0.2.0** (first PyPI release): reasoning-gym adapter, experimental `verifiers` and
   OpenEnv adapters, OpenEnv check export, leak and judge probes (14 in all), gameability and
   leakage checks, GitHub Action, pre-commit hook, pytest plugin, docs site
-- [ ] **v0.2.1**: no grading of probe outputs that give the reference answer, bounded partial
+- [x] **v0.2.1**: no grading of probe outputs that give the reference answer, bounded partial
   credit reported as `INFO`, the `HF-WRONG` wrong-answer probe and `semantic.canary_floor`
   (15 probes), [reasoning-gym results](results/reasoning-gym.md)
 - [ ] **v0.2.x** (Feb 2027): stable `verifiers` and OpenEnv adapters, multi-step OpenEnv

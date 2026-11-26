@@ -10,7 +10,7 @@ from hackfloor.core import Attempt, Capability, TaskRef, Workspace
 from hackfloor.probes.base import Probe, Variant, get_probes, register
 from hackfloor.scan import ScanResult, scan
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     "Attempt",
