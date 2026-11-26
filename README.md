@@ -65,7 +65,7 @@ Output:
 
 ```text
 ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ hackfloor 0.2.0  ·  fixtures/rlvr/vulnerable_math  ·  rlvr · 40 tasks                            │
+│ hackfloor 0.2.1  ·  fixtures/rlvr/vulnerable_math  ·  rlvr · 40 tasks                            │
 │ calibration  reference 1.00   null policy 0.00   calibration PASS                                │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
 probe      what it tries                  result  severity  Δ floor  hack-pass
@@ -92,8 +92,6 @@ How to read it:
 - The exit code is `1` when a serious finding exists, so the command also works as a CI gate. A JSON **integrity card** with every number is written to `hackfloor-card.json`.
 
 The same command on `fixtures/rlvr/fixed_math` ends in `RESISTED`.
-
-> The table above is from the current `main`. The 0.2.0 wheel on PyPI prints `HACK` and `resisted` with check marks where `main` prints `FAIL` and `PASS`. The numbers are the same.
 
 Scan your own reward function (one `{"prompt": ..., "answer": ...}` object per line of `rows.jsonl`):
 
@@ -136,7 +134,7 @@ Setup for each is in [Adapters](https://ranjeetds.github.io/hackfloor/adapters/)
 ## Run it in CI
 
 ```yaml
-- uses: ranjeetds/hackfloor@v0.2.0
+- uses: ranjeetds/hackfloor@v0.2.1
   with:
     target: envs/my_task
     fail-on: high
@@ -161,7 +159,7 @@ The step fails when a finding meets `fail-on`. A pre-commit hook and a pytest fi
   author  = {Dhumal, Ranjeet},
   title   = {hackfloor: adversarial probes for RL environment graders and agent benchmarks},
   year    = {2026},
-  version = {0.2.0},
+  version = {0.2.1},
   url     = {https://github.com/ranjeetds/hackfloor},
   license = {Apache-2.0}
 }
