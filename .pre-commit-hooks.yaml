@@ -1,0 +1,7 @@
+- id: hackfloor
+  name: hackfloor scan
+  description: Probe an RL environment grader for reward hacks. Pass the target and options in `args`.
+  entry: hackfloor scan
+  language: python
+  pass_filenames: false
+  require_serial: true

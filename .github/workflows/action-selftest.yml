@@ -1,0 +1,46 @@
+name: Action self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan a fixed fixture (must pass)
+        id: fixed
+        uses: ./
+        with:
+          target: fixtures/rlvr/fixed_math
+          card: fixed-card.json
+
+      - name: Scan a vulnerable fixture (must fail)
+        id: vulnerable
+        continue-on-error: true
+        uses: ./
+        with:
+          target: fixtures/tasks/vulnerable_pytest
+          card: vulnerable-card.json
+          # this fixture's grader runs pytest
+          install: pytest
+
+      - name: Check outputs
+        env:
+          FIXED_VERDICT: ${{ steps.fixed.outputs.verdict }}
+          VULN_VERDICT: ${{ steps.vulnerable.outputs.verdict }}
+          VULN_OUTCOME: ${{ steps.vulnerable.outcome }}
+          VULN_FINDINGS: ${{ steps.vulnerable.outputs.findings }}
+        run: |
+          echo "fixed=$FIXED_VERDICT vulnerable=$VULN_VERDICT ($VULN_OUTCOME, $VULN_FINDINGS findings)"
+          test "$FIXED_VERDICT" = RESISTED
+          test "$VULN_VERDICT" = VULNERABLE
+          test "$VULN_OUTCOME" = failure
+          test "$VULN_FINDINGS" -gt 0
+          test -s fixed-card.json && test -s vulnerable-card.json
