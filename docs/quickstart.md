@@ -10,6 +10,9 @@ cd hackfloor
 uv venv && uv pip install -e ".[dev]"
 ```
 
+Framework adapters are extras: `uv pip install -e ".[reasoning-gym]"`, `".[verifiers]"`
+(Python 3.11+), `".[openenv]"`, or `".[integrations]"` for all three.
+
 ## First scan
 
 ```bash
@@ -49,6 +52,13 @@ nothing can be concluded).
 --probes HF-EQ,HF-CONFTEST   run only these probes
 --tasks 50                   use the first 50 rows or tasks
 --replays 3                  replay every attempt three times
+--seed 0                     seed for resampling and for dataset targets
+--openenv-checks checks.json also write OpenEnv RFC 008 CheckResult records
 --fail-on critical|high|medium|none
 --quiet                      print only the verdict line
 ```
+
+## Next
+
+- Scan your own environment: [Adapters](adapters.md).
+- Run it on every pull request, as a pre-commit hook, or from pytest: [CI](ci.md).

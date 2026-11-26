@@ -1,7 +1,7 @@
 # Integrity card
 
 Every scan writes a JSON card (default `hackfloor-card.json`) that validates against
-[`card-0.1.schema.json`](../src/hackfloor/schema/card-0.1.schema.json).
+[`card-0.1.schema.json`](https://github.com/ranjeetds/hackfloor/blob/main/src/hackfloor/schema/card-0.1.schema.json).
 
 ## Top-level fields
 
@@ -21,18 +21,22 @@ Every scan writes a JSON card (default `hackfloor-card.json`) that validates aga
 Ids follow OpenEnv's RFC 008 validation code (openenv/OpenEnv v0.14), plus one
 hackfloor-specific id.
 
-| Id | v0.1 |
+| Id | What hackfloor measures |
 |---|---|
-| `hackfloor.calibration` | the reference beats the null policy on every task |
+| `hackfloor.calibration` | the reference beats the null policy on every task, consistently across replays |
 | `semantic.oracle_max` | every reference run reaches the declared maximum (tolerance 0) |
-| `semantic.floor_gap` | the null policy sits at least `min_floor_gap` of the range below the maximum and below the reference |
+| `semantic.floor_gap` | the highest null-policy reward sits at least `min_floor_gap` of the range below the maximum and below the lowest reference reward |
+| `statistical.adversarial_floor` | no probe in the panel has a finding; when none does, the 95% upper bound on the hack-pass rate per probe and task |
+| `statistical.gameability_gap` | point-biserial correlation and AUROC between solved and reward across all scripted attempts, against a declared bound (see [Statistics](statistics.md#gameability)) |
+| `semantic.no_solution_leakage` | no leak probe reaches a reference solution, and the reference answer is not visible in the prompt; `NOT_MEASURED` when there is nothing to check |
 | `runtime.reward_well_formed` | every reward is finite and inside the declared range, and no grader call failed |
-| `statistical.adversarial_floor` | no probe in the panel has a finding |
 | `runtime.oracle_containment` | partial: only the reward-file write probe; `SKIP` when it does not apply |
-| `statistical.gameability_gap` | `NOT_MEASURED` |
 | `semantic.canary_floor` | `NOT_MEASURED` |
-| `semantic.no_solution_leakage` | `NOT_MEASURED` |
-| `runtime.network_policy`, `runtime.host_containment`, `runtime.resource_bounds`, `runtime.episode_isolation` | `NOT_MEASURED` |
+| `runtime.network_policy`, `runtime.host_containment`, `runtime.resource_bounds`, `runtime.episode_isolation` | `NOT_MEASURED` (need container isolation or multi-episode runs) |
+
+`statistical.adversarial_floor` and `statistical.gameability_gap` are in the lane RFC 008
+reserves for operators; hackfloor is one way to produce them. `hackfloor scan --openenv-checks
+PATH` writes these checks as OpenEnv `CheckResult` records (see [Adapters](adapters.md#openenv-check-results)).
 
 `NOT_MEASURED` is never a pass.
 
