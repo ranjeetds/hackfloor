@@ -103,7 +103,7 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
         probe_ids=[p.strip() for p in args.probes.split(",")] if args.probes else None,
     )
     if console.is_interactive:
-        with console.status("scanning", spinner="dots") as status:
+        with console.status("scanning", spinner="dots", spinner_style="bright_blue") as status:
             result = scan(subject, config, progress=lambda msg: status.update(msg))
     else:
         result = scan(subject, config)
@@ -117,15 +117,15 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
     else:
         render_terminal(card, console, target=args.target)
     out = write_card(card, args.out)
-    console.print(f"[dim]integrity card →[/dim] {out}")
+    console.print(f"[dim]integrity card →[/dim] {out}", highlight=False)
     if args.report:
         report = Path(args.report)
         report.parent.mkdir(parents=True, exist_ok=True)
         report.write_text(render_markdown(card), encoding="utf-8")
-        console.print(f"[dim]report         →[/dim] {report}")
+        console.print(f"[dim]report         →[/dim] {report}", highlight=False)
     if args.openenv_checks:
         checks = write_openenv_checks(card, args.openenv_checks)
-        console.print(f"[dim]openenv checks →[/dim] {checks}")
+        console.print(f"[dim]openenv checks →[/dim] {checks}", highlight=False)
     if card["verdict"] == "UNCALIBRATED":
         return 2
     if args.fail_on != "none" and any(

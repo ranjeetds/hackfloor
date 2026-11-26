@@ -11,8 +11,8 @@ from rich.text import Text
 
 _ICON = {
     "finding": ("FAIL", "bold red"),
-    "resisted": ("PASS", "green"),
-    "info": ("INFO", "cyan"),
+    "resisted": ("PASS", "bold"),
+    "info": ("INFO", "bright_blue"),
     "flaky": ("WARN", "yellow"),
     "not_applicable": ("n/a", "dim"),
     "error": ("ERROR", "magenta"),
@@ -21,7 +21,7 @@ _SEV = {"critical": "bold white on red", "high": "bold red", "medium": "yellow",
 _VERDICT = {
     "VULNERABLE": "bold white on red",
     "WEAK": "bold black on yellow",
-    "RESISTED": "bold white on green",
+    "RESISTED": "bold white on blue",
     "UNCALIBRATED": "bold white on magenta",
 }
 
@@ -31,8 +31,8 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
     cal = card["calibration"]
     s = card["summary"]
     header = Text.assemble(
-        ("hackfloor ", "bold cyan"),
-        (card["tool"]["version"], "cyan"),
+        ("hackfloor ", "bold bright_blue"),
+        (card["tool"]["version"], "bright_blue"),
         ("  ·  ", "dim"),
         (target or subj["name"], "bold"),
         ("  ·  ", "dim"),
@@ -41,15 +41,13 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
     calib = Text.assemble(
         ("calibration  ", "dim"),
         ("reference ", ""),
-        (f"{cal['gold_mean']:.2f}", "bold green"),
+        (f"{cal['gold_mean']:.2f}", "bold"),
         ("   null policy ", ""),
         (f"{cal['null_mean']:.2f}", "bold"),
         ("   calibration ", ""),
         (
             card["checks"]["hackfloor.calibration"]["status"],
-            "bold green"
-            if card["checks"]["hackfloor.calibration"]["status"] == "PASS"
-            else "bold red",
+            "bold" if card["checks"]["hackfloor.calibration"]["status"] == "PASS" else "bold red",
         ),
     )
     table = Table(box=None, pad_edge=False, show_edge=False, header_style="bold dim")
@@ -90,7 +88,7 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
         (f" · integrity level {level}", "bold"),
         (f" · {s['seconds']:.1f}s", "dim"),
     )
-    console.print(Panel(Group(header, calib), border_style="cyan", padding=(0, 1)))
+    console.print(Panel(Group(header, calib), border_style="bright_blue", padding=(0, 1)))
     console.print(table)
     skipped = [p["id"] for p in card["probes"] if p["status"] == "not_applicable"]
     if skipped:
@@ -103,7 +101,7 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
             console.print(
                 Text.assemble(
                     ("  ↳ ", "dim"),
-                    (f"{p['id']:<14}", "bold cyan"),
+                    (f"{p['id']:<14}", "bold bright_blue"),
                     ("partial credit only: ", "dim"),
                     (f"{ev['variant']} scored {ev['exploit_reward']:.2f}", ""),
                     (f"  reference {ev['gold_reward']:.2f}", "dim"),
@@ -121,7 +119,7 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
                     ("  control ", "dim"),
                     (f"{ev['control_reward']:.2f}", "bold"),
                     ("  reference ", "dim"),
-                    (f"{ev['gold_reward']:.2f}", "green"),
+                    (f"{ev['gold_reward']:.2f}", "bold"),
                     (where, "dim"),
                 )
             )
