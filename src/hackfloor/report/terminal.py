@@ -10,11 +10,11 @@ from rich.table import Table
 from rich.text import Text
 
 _ICON = {
-    "finding": ("✗ HACK", "bold red"),
-    "resisted": ("✓ resisted", "green"),
-    "flaky": ("~ flaky", "yellow"),
-    "not_applicable": ("· n/a", "dim"),
-    "error": ("! error", "magenta"),
+    "finding": ("FAIL", "bold red"),
+    "resisted": ("PASS", "green"),
+    "flaky": ("WARN", "yellow"),
+    "not_applicable": ("n/a", "dim"),
+    "error": ("ERROR", "magenta"),
 }
 _SEV = {"critical": "bold white on red", "high": "bold red", "medium": "yellow", "none": "dim"}
 _VERDICT = {

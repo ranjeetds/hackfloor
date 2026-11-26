@@ -5,11 +5,11 @@ from __future__ import annotations
 from typing import Any
 
 _STATUS = {
-    "finding": "**hack**",
-    "resisted": "resisted",
-    "flaky": "flaky",
+    "finding": "**FAIL**",
+    "resisted": "PASS",
+    "flaky": "WARN",
     "not_applicable": "n/a",
-    "error": "error",
+    "error": "ERROR",
 }
 
 
