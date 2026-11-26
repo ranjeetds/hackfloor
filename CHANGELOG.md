@@ -30,6 +30,8 @@ All notable changes are recorded here. The format follows
 
 ### Added
 
+- Results page for reasoning-gym 0.1.25 and TRL `accuracy_reward`: method, versions,
+  commands, and the `game_of_life_halting` finding (fixed upstream in #561).
 - `HF-WRONG`, a plausible wrong answer in the right format: the reference answer with a
   boolean or yes/no flipped, the last number changed (by one below 10, otherwise by a tenth
   of its magnitude), or the next option letter, against an empty answer slot. Only a wrong

@@ -42,6 +42,8 @@ nav:
       - Adapters and supported targets: adapters.md
       - CI, pre-commit and pytest: ci.md
       - Bundled fixtures: fixtures.md
+  - Results:
+      - reasoning-gym 0.1.25: results/reasoning-gym.md
   - Reference:
       - Probes: probes.md
       - Integrity card: integrity-card.md

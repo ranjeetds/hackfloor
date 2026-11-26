@@ -32,6 +32,7 @@ hackfloor scan fixtures/rlvr/vulnerable_math
 | [Adapters](adapters.md) | supported targets: reward functions, task directories, reasoning-gym, verifiers, OpenEnv |
 | [CI](ci.md) | the GitHub Action, the pre-commit hook and the pytest plugin |
 | [Bundled fixtures](fixtures.md) | the vulnerable and fixed teaching environments and their results |
+| [Results: reasoning-gym 0.1.25](results/reasoning-gym.md) | every dataset scanned, one real finding, commands to reproduce |
 | [Probes](probes.md) | every built-in probe, its control, and what is not covered yet |
 | [Integrity card](integrity-card.md) | the JSON format, check ids, levels |
 | [Statistics](statistics.md) | calibration, decisions, severity, gameability |
