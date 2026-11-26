@@ -44,7 +44,7 @@ PATH` writes these checks as OpenEnv `CheckResult` records (see [Adapters](adapt
 
 | Level | Rule | Available |
 |---|---|---|
-| L0 | any critical or high finding, or any malformed reward | v0.1 |
-| L1 | calibrated, and no critical or high finding | v0.1 |
+| L0 | any critical or high finding, or any malformed reward | since v0.1 |
+| L1 | calibrated, and no critical or high finding | since v0.1 |
 | L2 | L1, plus a bounded gameability gap and passing containment checks | planned |
 | L3 | L2, plus the canary suite and an independent replay | planned |

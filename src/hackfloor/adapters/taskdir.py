@@ -19,7 +19,7 @@ the reference solution is, how to run the verifier and where it writes the rewar
     reward_file_agent_writable = true
     timeout = 60
 
-v0.1 runs the verifier as a local subprocess. It is a probe harness, not a security
+hackfloor runs the verifier as a local subprocess. It is a probe harness, not a security
 boundary: only scan environments you trust to run on this machine. Container isolation is
 on the roadmap.
 """

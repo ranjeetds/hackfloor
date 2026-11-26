@@ -23,12 +23,24 @@ ASSETS = ROOT / "docs" / "assets"
 OUT = ROOT / "hackfloor-out"
 
 sys.path.insert(0, str(ROOT / "src"))
+# The images use a fixed width. rich lets COLUMNS/LINES override an explicit width, and
+# falls back to 80 columns when TERM is "dumb" (as in many CI and agent shells).
+for _var in ("COLUMNS", "LINES"):
+    os.environ.pop(_var, None)
+if os.environ.get("TERM", "dumb") == "dumb":
+    os.environ["TERM"] = "xterm-256color"
 from hackfloor.cli import main  # noqa: E402
 
 
 def record_scan(target: str, card_name: str, svg_name: str) -> dict:
     os.chdir(ROOT)
-    console = Console(record=True, width=100, force_terminal=True, color_system="truecolor")
+    console = Console(
+        record=True,
+        width=104,
+        force_terminal=True,
+        force_interactive=False,
+        color_system="truecolor",
+    )
     console.print(f"[bold green]$[/bold green] hackfloor scan {target}")
     argv = ["scan", target, "--out", f"hackfloor-out/{card_name}", "--fail-on", "none"]
     main(argv, console=console)
@@ -78,11 +90,21 @@ def _icon(cx: float, cy: float, ok: bool, pal: dict) -> str:
     )
 
 
+def card_height(card: dict) -> int:
+    rows = sum(p["status"] != "not_applicable" for p in card["probes"])
+    return 166 + 28 * rows + 20
+
+
+def _short(title: str, limit: int = 27) -> str:
+    return title if len(title) <= limit else title[: limit - 1].rstrip() + "…"
+
+
 def _card_svg(card: dict, x: float, pal: dict) -> str:
     verdict = card["verdict"]
     level = "n/a" if card["level"] is None else f"L{card['level']}"
     vcolor = pal["red"] if verdict == "VULNERABLE" else pal["green"]
-    w, h = 450, 330
+    rows = [p for p in card["probes"] if p["status"] != "not_applicable"]
+    w, h = 450, card_height(card)
     parts = [
         f'<rect x="{x}" y="20" width="{w}" height="{h}" rx="12" fill="{pal["panel"]}" '
         f'stroke="{pal["border"]}"/>',
@@ -101,7 +123,6 @@ def _card_svg(card: dict, x: float, pal: dict) -> str:
         f'<line x1="{x + 24}" y1="140" x2="{x + w - 24}" y2="140" stroke="{pal["border"]}"/>',
     ]
     y = 166
-    rows = [p for p in card["probes"] if p["status"] != "not_applicable"]
     for p in rows:
         hacked = p["status"] == "finding"
         color = pal["red"] if hacked else pal["green"]
@@ -111,7 +132,7 @@ def _card_svg(card: dict, x: float, pal: dict) -> str:
             f'<text x="{x + 50}" y="{y}" font-family="{MONO}" font-size="13.5" '
             f'fill="{pal["text"]}">{p["id"]}</text>',
             f'<text x="{x + 178}" y="{y}" font-family="{FONT}" font-size="13" '
-            f'fill="{pal["muted"]}">{escape(p["title"])}</text>',
+            f'fill="{pal["muted"]}">{escape(_short(p["title"]))}</text>',
             f'<text x="{x + w - 24}" y="{y}" text-anchor="end" font-family="{MONO}" '
             f'font-size="13" font-weight="700" fill="{color}">{label}</text>',
         ]
@@ -122,20 +143,22 @@ def _card_svg(card: dict, x: float, pal: dict) -> str:
     parts.append(
         f'<text x="{x + 24}" y="{y + 12}" font-family="{FONT}" font-size="12.5" '
         f'fill="{pal["muted"]}">calibration {sanity} · {measured} of '
-        f"{len(rfc)} RFC 008 criteria measured by v0.1</text>"
+        f"{len(rfc)} RFC 008 criteria measured by v0.2</text>"
     )
     return "\n".join(parts)
 
 
 def integrity_cards(before: dict, after: dict) -> None:
+    height = max(card_height(before), card_height(after)) + 40
+    mid = height // 2
     for mode, pal in PALETTES.items():
         svg = [
-            '<svg xmlns="http://www.w3.org/2000/svg" width="980" height="370" '
-            'viewBox="0 0 980 370" role="img" aria-label="Integrity cards before and after '
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="980" height="{height}" '
+            f'viewBox="0 0 980 {height}" role="img" aria-label="Integrity cards before and after '
             'fixing the verifier">',
-            f'<rect width="980" height="370" fill="{pal["bg"]}" rx="14"/>',
+            f'<rect width="980" height="{height}" fill="{pal["bg"]}" rx="14"/>',
             _card_svg(before, 20, pal),
-            f'<path d="M476 185 h24 m-8 -8 l8 8 l-8 8" stroke="{pal["muted"]}" '
+            f'<path d="M476 {mid} h24 m-8 -8 l8 8 l-8 8" stroke="{pal["muted"]}" '
             'stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
             _card_svg(after, 510, pal),
             "</svg>",

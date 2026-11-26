@@ -4,7 +4,32 @@ All notable changes are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [Unreleased] (0.2.0.dev0)
+
+### Fixed
+
+- CI: the test job no longer runs `uv venv` after `setup-uv` has already created the
+  environment, which failed every test job on the first run.
+
+### Added
+
+- Probes `HF-SKIPTEST`, `HF-LOOKUP`, `HF-ECHO`, `HF-JUDGE`, `HF-ANSWERKEY` and `HF-GITLEAK`
+  (14 built in), with vulnerable and fixed judge and leaky fixtures.
+- Card checks `statistical.gameability_gap` (point-biserial correlation and AUROC against a
+  declared bound) and `semantic.no_solution_leakage`; a reproducible hack-pass is always a
+  finding.
+- Task directories: optional `setup` command, `instruction` file and a sandbox preview for
+  leak probes.
+- Adapters for reasoning-gym, Prime Intellect `verifiers` (experimental) and single-step
+  OpenEnv environments (experimental); `reasoning-gym:`, `verifiers:` and `subject:` targets;
+  package extras for each.
+- `--openenv-checks PATH`: the card's RFC 008 checks as OpenEnv `CheckResult` records.
+- A composite GitHub Action (`action.yml`) and a pre-commit hook.
+- `hackfloor.testing.assert_resists` and a pytest plugin with a `hackfloor` fixture.
+- A mkdocs-material documentation site with a GitHub Pages workflow.
+- CI jobs for the integrations and the action self-test.
+
+## 0.1.0.dev0
 
 ### Added
 

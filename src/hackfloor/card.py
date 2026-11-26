@@ -16,7 +16,7 @@ from hackfloor.scan import NOTHING_TO_TRY, ProbeResult, ScanResult
 CARD_VERSION = "0.1"
 
 #: Check ids follow OpenEnv's RFC 008 validation code (openenv/OpenEnv, v0.14). These are the
-#: reward-integrity and containment criteria hackfloor 0.1 does not measure yet. They are
+#: reward-integrity and containment criteria hackfloor does not measure yet. They are
 #: listed so a card never implies coverage it does not have.
 NOT_YET_MEASURED = {
     "semantic.canary_floor": "export of probes as OpenEnv canaries is planned",
@@ -196,7 +196,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
         "subject": result.subject,
         "verdict": result.verdict,
         "level": result.level,
-        "level_scope": "hackfloor 0.1 issues levels 0 and 1 only",
+        "level_scope": "hackfloor 0.2 issues levels 0 and 1 only",
         "summary": {
             "tasks": len(result.tasks),
             "probes_run": sum(p.status not in ("not_applicable", "error") for p in result.probes),
