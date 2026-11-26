@@ -1,0 +1,88 @@
+name: hackfloor
+description: Probe an RL environment grader or agent benchmark for reward hacks and publish its integrity card.
+author: Ranjeet Dhumal
+branding:
+  icon: shield
+  color: gray-dark
+
+inputs:
+  target:
+    description: What to scan, exactly as for `hackfloor scan` (a task or RLVR directory, file.py:fn, reasoning-gym:<dataset>, ...).
+    required: true
+  args:
+    description: Extra arguments for `hackfloor scan`, for example `--data rows.jsonl --replays 3`.
+    required: false
+    default: ""
+  fail-on:
+    description: Fail the step if any finding is at least this severe (critical, high, medium, none).
+    required: false
+    default: high
+  card:
+    description: Where to write the integrity card.
+    required: false
+    default: hackfloor-card.json
+  python-version:
+    description: Python to set up with actions/setup-python. Empty uses the python already on PATH.
+    required: false
+    default: "3.12"
+  install:
+    description: Extra pip requirements for the environment under test (e.g. `-r requirements.txt` or `hackfloor[reasoning-gym]`).
+    required: false
+    default: ""
+
+outputs:
+  verdict:
+    description: VULNERABLE, RESISTED or UNCALIBRATED.
+    value: ${{ steps.scan.outputs.verdict }}
+  level:
+    description: The integrity level the card records.
+    value: ${{ steps.scan.outputs.level }}
+  findings:
+    description: Number of findings.
+    value: ${{ steps.scan.outputs.findings }}
+  card:
+    description: Path of the integrity card.
+    value: ${{ inputs.card }}
+
+runs:
+  using: composite
+  steps:
+    - if: inputs.python-version != ''
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install hackfloor
+      shell: bash
+      env:
+        HF_INSTALL: ${{ inputs.install }}
+      run: |
+        # Installs the hackfloor version this action is pinned to.
+        python -m pip install --quiet --disable-pip-version-check "$GITHUB_ACTION_PATH" $HF_INSTALL
+
+    - name: Scan
+      id: scan
+      shell: bash
+      env:
+        HF_TARGET: ${{ inputs.target }}
+        HF_ARGS: ${{ inputs.args }}
+        HF_FAIL_ON: ${{ inputs.fail-on }}
+        HF_CARD: ${{ inputs.card }}
+      run: |
+        report="$RUNNER_TEMP/hackfloor-report.md"
+        set +e
+        # HF_ARGS is split on whitespace on purpose: it holds several arguments.
+        hackfloor scan "$HF_TARGET" --fail-on "$HF_FAIL_ON" --out "$HF_CARD" --report "$report" $HF_ARGS
+        code=$?
+        set -e
+        if [ -f "$report" ]; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
+        if [ -f "$HF_CARD" ]; then
+          python - "$HF_CARD" >> "$GITHUB_OUTPUT" <<'PY'
+        import json, sys
+        card = json.load(open(sys.argv[1], encoding="utf-8"))
+        print(f"verdict={card['verdict']}")
+        print(f"level={card['level']}")
+        print(f"findings={card['summary']['findings']}")
+        PY
+        fi
+        exit $code
