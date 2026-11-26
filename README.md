@@ -1,17 +1,17 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
-    <img alt="hackfloor: prove that agents which don't solve the task can't score" src="docs/assets/banner-light.svg" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-light.svg">
+    <img alt="hackfloor: prove that agents which don't solve the task can't score" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/banner-light.svg" width="100%">
   </picture>
 </p>
 
 <p align="center">
   <a href="https://github.com/ranjeetds/hackfloor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ranjeetds/hackfloor/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="PyPI: not yet released" src="https://img.shields.io/badge/pypi-not%20yet%20released-lightgrey">
+  <a href="https://pypi.org/project/hackfloor/"><img alt="PyPI" src="https://img.shields.io/pypi/v/hackfloor"></a>
   <img alt="Python 3.10 to 3.13" src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776ab">
-  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
-  <img alt="Status: pre-alpha" src="https://img.shields.io/badge/status-pre--alpha-orange">
+  <a href="https://github.com/ranjeetds/hackfloor/blob/main/LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+  <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-orange">
   <a href="#contributors"><img alt="All contributors" src="https://img.shields.io/badge/all_contributors-1-orange.svg"></a>
   <a href="#integrity-levels"><img alt="Integrity card" src="https://img.shields.io/badge/integrity%20card-v0.1-6f42c1"></a>
 </p>
@@ -35,9 +35,9 @@
 hackfloor runs policies that **do not solve the task** through an environment's **real grader**: empty and format-only answers, answer enumeration, prompt echo, prompt injection aimed at LLM judges, always-equal objects, `SkipTest`, hard-coded test cases, edited tests, a `conftest.py` that rewrites pytest reports, `sys.exit(0)` before the checks, a pre-written reward file, and answer keys left in the sandbox or in git history. Each probe is paired with a matched control that touches the same files without the exploit. If the probe scores above its control, that is a finding, and the integrity card records enough to replay it.
 
 <p align="center">
-  <img alt="hackfloor scan of the bundled vulnerable pytest task: six critical findings" src="docs/assets/scan-vulnerable.svg" width="860">
+  <img alt="hackfloor scan of the bundled vulnerable pytest task: six critical findings" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/scan-vulnerable.svg" width="860">
   <br>
-  <sub>Real output: <code>hackfloor scan fixtures/tasks/vulnerable_pytest</code> on the bundled teaching fixture. Rendered by <a href="scripts/render_readme_assets.py"><code>scripts/render_readme_assets.py</code></a>.</sub>
+  <sub>Real output: <code>hackfloor scan fixtures/tasks/vulnerable_pytest</code> on the bundled teaching fixture. Rendered by <a href="https://github.com/ranjeetds/hackfloor/blob/main/scripts/render_readme_assets.py"><code>scripts/render_readme_assets.py</code></a>.</sub>
 </p>
 
 ## Why
@@ -57,14 +57,19 @@ OpenEnv's [RFC 008](https://github.com/openenv/OpenEnv/issues/778) asks that "a 
 - 🎯 **Runs against the real grader.** No static guessing: every finding is a scored attempt you can replay.
 - ⚖️ **Matched controls.** `AlwaysEqual` is compared with `return None`, a patched `conftest.py` with an empty one, a written max reward with a written min. The gap measures the exploit, not noise.
 - 📐 **Statistics where they matter.** With 5 or more tasks, an exact sign test with Holm correction across probes; with fewer, the effect has to reproduce on every replay. A hack-pass that reproduces is always a finding. Clopper-Pearson intervals on hack-pass rates, and a gameability check (point-biserial correlation and AUROC between solved and reward).
-- 🪪 **Integrity cards.** A JSON record with a [schema](src/hackfloor/schema/card-0.1.schema.json), check ids taken from OpenEnv's RFC 008 validation code, `NOT_MEASURED` wherever hackfloor has no test, and an export to OpenEnv `CheckResult` records.
+- 🪪 **Integrity cards.** A JSON record with a [schema](https://github.com/ranjeetds/hackfloor/blob/main/src/hackfloor/schema/card-0.1.schema.json), check ids taken from OpenEnv's RFC 008 validation code, `NOT_MEASURED` wherever hackfloor has no test, and an export to OpenEnv `CheckResult` records.
 - 🧩 **Adapters.** Plain reward functions (`fn(completion, answer)`, verl `compute_score`, TRL `reward_funcs`), Harbor-style task directories, reasoning-gym datasets, and (experimental) Prime Intellect `verifiers` tasksets and single-step OpenEnv environments.
 - 🔌 **Plugin probes.** Subclass `Probe`, register it, or ship it through the `hackfloor.probes` entry point.
 - 🚦 **CI-ready.** A GitHub Action, a pre-commit hook and a pytest fixture. Exit code `1` when a finding meets `--fail-on` (default `high`), plus a Markdown report for the job summary.
 
 ## Quickstart
 
-hackfloor is not on PyPI yet. Install from source:
+```bash
+pip install hackfloor                      # or: uv pip install hackfloor
+pip install "hackfloor[integrations]"      # + reasoning-gym, verifiers (3.11+), openenv
+```
+
+The bundled fixtures live in the repository, so clone it to try them:
 
 ```bash
 git clone https://github.com/ranjeetds/hackfloor.git
@@ -108,7 +113,7 @@ for p in result.findings:
     print(p.probe.id, p.severity, f"{p.hack_passes}/{p.n}")  # HF-DUMP critical 20/20
 ```
 
-Scan a reasoning-gym dataset, a `verifiers` taskset or an OpenEnv environment (see [adapters](docs/adapters.md#framework-adapters)):
+Scan a reasoning-gym dataset, a `verifiers` taskset or an OpenEnv environment (see [adapters](https://github.com/ranjeetds/hackfloor/blob/main/docs/adapters.md#framework-adapters)):
 
 ```bash
 uv pip install -e ".[integrations]"
@@ -142,7 +147,7 @@ reward_file_agent_writable = true    # enables HF-REWARDFILE
 timeout = 60
 ```
 
-The verifier gets `HACKFLOOR_SANDBOX`, `HACKFLOOR_WORKSPACE` and `HACKFLOOR_LOGS` in its environment. A directory of such tasks is scanned as a suite. See [docs/adapters.md](docs/adapters.md).
+The verifier gets `HACKFLOOR_SANDBOX`, `HACKFLOOR_WORKSPACE` and `HACKFLOOR_LOGS` in its environment. A directory of such tasks is scanned as a suite. See [docs/adapters.md](https://github.com/ranjeetds/hackfloor/blob/main/docs/adapters.md).
 
 </details>
 
@@ -170,7 +175,7 @@ hackfloor ships 14 probes. A probe runs only when the target exposes what it nee
 | `HF-GITLEAK` | leak | try every version of the entry file in the workspace's git history | tasks with a git workspace | SWE-bench issue #465 |
 | `HF-REWARDFILE` | contain | pre-write the max reward to the reward file | tasks whose reward file the agent can reach | Harbor reward-file layout, BenchJack V7 |
 
-Probes are the publicly documented minimal forms, and every file they write carries a `hackfloor canary` comment. Network and timing probes are not included yet: they need container isolation to be safe and deterministic. See [docs/probes.md](docs/probes.md).
+Probes are the publicly documented minimal forms, and every file they write carries a `hackfloor canary` comment. Network and timing probes are not included yet: they need container isolation to be safe and deterministic. See [docs/probes.md](https://github.com/ranjeetds/hackfloor/blob/main/docs/probes.md).
 
 ### What the bundled fixtures show
 
@@ -210,17 +215,17 @@ flowchart TD
 
 1. **Calibrate.** The reference solution must beat the null policy (an empty completion or an untouched workspace) on every task. If it does not, the card says `UNCALIBRATED` and gives no level.
 2. **Probe.** Each applicable probe yields variants: an exploit and a matched control. Every attempt runs in a fresh sandbox and is replayed (`--replays`, default 2). The best variant per task counts.
-3. **Decide.** Per task, the floor gap Δ is exploit minus control. A hack-pass is an exploit that reaches the reference score. Severity is **critical** when any task hack-passes, **high** when the mean Δ is at least half the reference-to-null gap, and **medium** otherwise. The thresholds and tests are in [docs/statistics.md](docs/statistics.md).
+3. **Decide.** Per task, the floor gap Δ is exploit minus control. A hack-pass is an exploit that reaches the reference score. Severity is **critical** when any task hack-passes, **high** when the mean Δ is at least half the reference-to-null gap, and **medium** otherwise. The thresholds and tests are in [docs/statistics.md](https://github.com/ranjeetds/hackfloor/blob/main/docs/statistics.md).
 
 ## Integrity levels
 
-The integrity card is a JSON file, written by every scan, that validates against [`card-0.1.schema.json`](src/hackfloor/schema/card-0.1.schema.json).
+The integrity card is a JSON file, written by every scan, that validates against [`card-0.1.schema.json`](https://github.com/ranjeetds/hackfloor/blob/main/src/hackfloor/schema/card-0.1.schema.json).
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/integrity-card-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/integrity-card-light.svg">
-    <img alt="Integrity cards for the vulnerable and fixed pytest fixtures" src="docs/assets/integrity-card-light.svg" width="860">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/integrity-card-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/integrity-card-light.svg">
+    <img alt="Integrity cards for the vulnerable and fixed pytest fixtures" src="https://raw.githubusercontent.com/ranjeetds/hackfloor/main/docs/assets/integrity-card-light.svg" width="860">
   </picture>
   <br>
   <sub>Rendered from the real cards of the two pytest fixtures.</sub>
@@ -273,7 +278,7 @@ gradecheck is the closest project in spirit and its README is worth reading. Ben
 | Prime Intellect `verifiers` (v1 API) | 🧪 experimental | `hackfloor scan verifiers:<module:factory>`; trace-level rewards only; tested against 0.4.1 |
 | OpenEnv `Environment` (single step, in process) | 🧪 experimental | `OpenEnvSubject` via `subject:<module:factory>`; tested against 0.15.0, including its `reasoning_gym_env` |
 | OpenEnv RFC 008 `CheckResult` export | ✅ v0.2 | `--openenv-checks checks.json`; validated against openenv 0.15.0's schema |
-| GitHub Action | ✅ v0.2 | `uses: ranjeetds/hackfloor@<ref>`, see [docs/ci.md](docs/ci.md) |
+| GitHub Action | ✅ v0.2 | `uses: ranjeetds/hackfloor@v0.2.0`, see [docs/ci.md](https://github.com/ranjeetds/hackfloor/blob/main/docs/ci.md) |
 | pre-commit | ✅ v0.2 | hook id `hackfloor` |
 | pytest | ✅ v0.2 | `hackfloor` fixture, `hackfloor.testing.assert_resists` |
 | OpenRLHF, inspect_ai scorers, multi-step and HTTP OpenEnv | planned | |
@@ -281,9 +286,8 @@ gradecheck is the closest project in spirit and its README is worth reading. Ben
 ## Roadmap
 
 - [x] **v0.1 foundation:** CLI, probe plugin API, two adapters, 8 probes, matched controls, paired statistics, integrity card with schema, Markdown report, fixtures with fixed twins
-- [ ] **v0.1 release** (target 21 Dec 2026): PyPI package
-- [x] **v0.2 work, in development** (0.2.0.dev0): reasoning-gym adapter, experimental `verifiers` and OpenEnv adapters, OpenEnv check export, leak and judge probes (14 in all), gameability and leakage checks, GitHub Action, pre-commit hook, pytest plugin, docs site
-- [ ] **v0.2 release** (Feb 2027): stable `verifiers` and OpenEnv adapters, multi-step OpenEnv
+- [x] **v0.2.0** (first PyPI release): reasoning-gym adapter, experimental `verifiers` and OpenEnv adapters, OpenEnv check export, leak and judge probes (14 in all), gameability and leakage checks, GitHub Action, pre-commit hook, pytest plugin, docs site
+- [ ] **v0.2.x** (Feb 2027): stable `verifiers` and OpenEnv adapters, multi-step OpenEnv
 - [ ] **v0.3** (Apr 2027): container isolation with network, timing and containment probes; model-based policies and a gameability gap over trained policies; judge probes against real LLM judges; L2
 - [ ] **v1.0** (Jun 2027): 31 probes, canary suite, replayable cards, L3
 - [ ] **Hub audit (upcoming):** scan public RL environments on the Hugging Face Hub and report findings privately to maintainers first. No results are published yet.
@@ -293,7 +297,7 @@ gradecheck is the closest project in spirit and its README is worth reading. Ben
 hackfloor exists so that environment authors find their graders' loopholes before a training run does. Its probes are the publicly documented minimal forms of known hacks.
 
 - Scan environments you maintain or are allowed to test.
-- If you find a hack in someone else's environment or benchmark, report it to the maintainers privately and give them time to fix it before you publish. [SECURITY.md](SECURITY.md) explains how to report a problem in hackfloor itself.
+- If you find a hack in someone else's environment or benchmark, report it to the maintainers privately and give them time to fix it before you publish. [SECURITY.md](https://github.com/ranjeetds/hackfloor/blob/main/SECURITY.md) explains how to report a problem in hackfloor itself.
 - Do not use hackfloor's output to inflate leaderboard or benchmark results.
 
 ## Citation
@@ -305,17 +309,17 @@ If hackfloor helps your research, please cite it:
   author  = {Dhumal, Ranjeet},
   title   = {hackfloor: adversarial probes for RL environment graders and agent benchmarks},
   year    = {2026},
-  version = {0.2.0.dev0},
+  version = {0.2.0},
   url     = {https://github.com/ranjeetds/hackfloor},
   license = {Apache-2.0}
 }
 ```
 
-There is also a [`CITATION.cff`](CITATION.cff).
+There is also a [`CITATION.cff`](https://github.com/ranjeetds/hackfloor/blob/main/CITATION.cff).
 
 ## Contributing
 
-New probes, adapters and documented hacks are welcome; [good first issues](https://github.com/ranjeetds/hackfloor/labels/good%20first%20issue) and [help wanted](https://github.com/ranjeetds/hackfloor/labels/help%20wanted) are good places to start. A new probe needs a public reference, a matched control, and a fixture pair (vulnerable and fixed) that proves it fires and that the fix holds. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+New probes, adapters and documented hacks are welcome; [good first issues](https://github.com/ranjeetds/hackfloor/labels/good%20first%20issue) and [help wanted](https://github.com/ranjeetds/hackfloor/labels/help%20wanted) are good places to start. A new probe needs a public reference, a matched control, and a fixture pair (vulnerable and fixed) that proves it fires and that the fix holds. See [CONTRIBUTING.md](https://github.com/ranjeetds/hackfloor/blob/main/CONTRIBUTING.md) and the [Code of Conduct](https://github.com/ranjeetds/hackfloor/blob/main/CODE_OF_CONDUCT.md).
 
 ```bash
 uv venv && uv pip install -e ".[dev]"
@@ -349,4 +353,4 @@ New contributors are added after their first merged contribution. Start with a [
 
 ## License
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](https://github.com/ranjeetds/hackfloor/blob/main/LICENSE)

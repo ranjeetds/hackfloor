@@ -2,7 +2,11 @@
 
 ## Install
 
-hackfloor is not on PyPI yet.
+```bash
+pip install hackfloor
+```
+
+To run the bundled fixtures or contribute, install from a clone:
 
 ```bash
 git clone https://github.com/ranjeetds/hackfloor.git
