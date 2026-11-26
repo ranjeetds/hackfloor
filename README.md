@@ -109,7 +109,9 @@ Each exploit is compared with a matched control that touches the same surface wi
 | OpenEnv `Environment` (single step, in process) | experimental | `subject:<module:factory>` (tested on openenv 0.15.0) |
 | OpenEnv RFC 008 `CheckResult` export | stable | `--openenv-checks checks.json` |
 
-OpenRLHF, inspect_ai scorers, and multi-step or HTTP OpenEnv are planned. gradecheck is the closest project in spirit. BenchJack audits whole benchmarks (219 distinct flaws in eight classes across 10 agent benchmarks, [arXiv 2605.12673](https://arxiv.org/abs/2605.12673)). OpenEnv's validator is where these checks are headed; hackfloor is a standalone probe panel it can use, not a replacement.
+OpenRLHF, inspect_ai scorers, and multi-step or HTTP OpenEnv are planned.
+
+gradecheck is the closest project in spirit. BenchJack audits whole benchmarks (219 distinct flaws in eight classes across 10 agent benchmarks, [arXiv 2605.12673](https://arxiv.org/abs/2605.12673)). OpenEnv's validator is where these checks are headed; hackfloor is a standalone probe panel it can use, not a replacement.
 
 ## Integrity card
 
