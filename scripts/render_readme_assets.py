@@ -86,7 +86,6 @@ FONT = "ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
 MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace"
 
 
-
 def _rgb(hex_color: str) -> tuple[int, int, int]:
     h = hex_color.lstrip("#")
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
@@ -128,6 +127,7 @@ def _mute_scan_svg(path: Path) -> None:
     """Darken badge backgrounds so white label text meets WCAG AA, and mute chrome dots."""
     text = path.read_text()
     import re
+
     text = re.sub(r'<rect fill="#c17a74"', '<rect fill="#A35A55"', text, flags=re.I)
     text = re.sub(r'<rect fill="#6a8e89"', '<rect fill="#5A7A76"', text, flags=re.I)
     text = re.sub(r'<rect fill="#b3925a"', '<rect fill="#8A6A32"', text, flags=re.I)
@@ -135,6 +135,7 @@ def _mute_scan_svg(path: Path) -> None:
     text = text.replace('fill="#febc2e"', 'fill="#8A7A52"')
     text = text.replace('fill="#28c840"', 'fill="#5A7A76"')
     path.write_text(text)
+
 
 def _icon(cx: float, cy: float, ok: bool, pal: dict) -> str:
     color = pal["accent_solid"] if ok else pal["red_solid"]
