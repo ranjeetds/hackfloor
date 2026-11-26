@@ -117,6 +117,10 @@ Network and timing probes need container isolation and are planned. The full lis
 
 A clean scan does not prove a grader is unhackable. It means the known cheap hacks failed. hackfloor runs verifiers as local subprocesses, which is not a security boundary, so scan only environments you would run on your own machine.
 
+## On a real project
+
+We scanned 100 of the 106 datasets in reasoning-gym 0.1.25 (the other six have no single reference answer or need a configuration), 100 tasks each, in under a minute on an 8-core machine. 94 resisted every probe. One was fully hackable: `game_of_life_halting` compared `bool(answer)`, so `False` scored the same as `True` and any non-empty answer earned the full reward on 100 of 100 tasks. It is fixed on reasoning-gym's `main` ([#561](https://github.com/open-thought/reasoning-gym/commit/eb75607658b0c37ee2ce58b98e62d1d147c42265)) but not yet in a PyPI release. Method, versions and commands are in [Results](https://ranjeetds.github.io/hackfloor/results/reasoning-gym/).
+
 ## Works with
 
 | You have | Command | Status |
@@ -145,6 +149,7 @@ The step fails when a finding meets `fail-on`. A pre-commit hook and a pytest fi
 - [Quickstart](https://ranjeetds.github.io/hackfloor/quickstart/) and [concepts in plain words](https://ranjeetds.github.io/hackfloor/concepts/): every term defined once
 - [Probes](https://ranjeetds.github.io/hackfloor/probes/), [integrity card](https://ranjeetds.github.io/hackfloor/integrity-card/) and [integrity levels](https://ranjeetds.github.io/hackfloor/integrity-card/#levels), [statistics](https://ranjeetds.github.io/hackfloor/statistics/)
 - [Bundled fixtures](https://ranjeetds.github.io/hackfloor/fixtures/): vulnerable and fixed teaching environments and their results
+- [Results on reasoning-gym 0.1.25](https://ranjeetds.github.io/hackfloor/results/reasoning-gym/): every dataset scanned, with commands to reproduce
 - [Background](https://ranjeetds.github.io/hackfloor/background/): the research behind the probes, and OpenEnv RFC 008
 - [How it compares](https://ranjeetds.github.io/hackfloor/comparison/) with gradecheck, BenchJack and OpenEnv validation
 - [Roadmap](https://ranjeetds.github.io/hackfloor/roadmap/) and [threat model](https://ranjeetds.github.io/hackfloor/threat-model/)
