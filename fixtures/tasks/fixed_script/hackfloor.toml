@@ -1,0 +1,16 @@
+[subject]
+kind = "task"
+name = "fixed_script"
+
+[task]
+environment = "environment"
+workspace = "workspace"
+solution = "solution"
+entry_file = "slug.py"
+entry_functions = ["slugify"]
+
+[verifier]
+command = ["{python}", "{task}/grader/grade.py"]
+cwd = "{workspace}"
+reward = "exit_code"
+timeout = 60

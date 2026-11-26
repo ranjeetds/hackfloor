@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv && uv pip install -e ".[dev]"
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv venv && uv pip install -e ".[dev]"
+      - run: uv run pytest
+      - name: Scan the fixtures
+        run: |
+          uv run hackfloor scan fixtures/tasks/fixed_pytest --out fixed-card.json
+          uv run hackfloor scan fixtures/rlvr/fixed_math --out fixed-math-card.json
+          if uv run hackfloor scan fixtures/tasks/vulnerable_pytest --out vuln-card.json; then
+            echo "expected the vulnerable fixture to fail the scan" && exit 1
+          fi

@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use hackfloor, please cite it as below."
+title: "hackfloor: adversarial probes for RL environment graders and agent benchmarks"
+type: software
+authors:
+  - family-names: Dhumal
+    given-names: Ranjeet
+    email: ranjeetrdhumal@gmail.com
+version: 0.1.0.dev0
+license: Apache-2.0
+repository-code: "https://github.com/ranjeetds/hackfloor"
+keywords:
+  - reinforcement learning
+  - reward hacking
+  - evaluation
+  - RL environments

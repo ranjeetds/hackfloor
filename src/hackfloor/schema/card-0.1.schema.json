@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ranjeetds/hackfloor/schema/card-0.1.schema.json",
+  "title": "hackfloor integrity card",
+  "type": "object",
+  "required": ["card_version", "tool", "created_at", "subject", "verdict", "level", "summary", "calibration", "probes", "checks", "method"],
+  "properties": {
+    "card_version": {"const": "0.1"},
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {"name": {"const": "hackfloor"}, "version": {"type": "string"}}
+    },
+    "created_at": {"type": "string"},
+    "subject": {
+      "type": "object",
+      "required": ["framework", "name"],
+      "properties": {"framework": {"enum": ["rlvr", "task"]}, "name": {"type": "string"}}
+    },
+    "verdict": {"enum": ["VULNERABLE", "WEAK", "RESISTED", "UNCALIBRATED"]},
+    "level": {"type": ["integer", "null"], "minimum": 0, "maximum": 3},
+    "summary": {
+      "type": "object",
+      "required": ["tasks", "probes_run", "findings", "worst_severity"],
+      "properties": {
+        "tasks": {"type": "integer", "minimum": 1},
+        "probes_run": {"type": "integer", "minimum": 0},
+        "findings": {"type": "integer", "minimum": 0},
+        "worst_severity": {"enum": ["none", "medium", "high", "critical"]}
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "required": ["reward_range", "gold_mean", "null_mean"],
+      "properties": {
+        "reward_range": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
+      }
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "family", "status", "severity"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9-]+$"},
+          "status": {"enum": ["finding", "resisted", "flaky", "not_applicable", "error"]},
+          "severity": {"enum": ["none", "medium", "high", "critical"]}
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {"status": {"enum": ["PASS", "FAIL", "SKIP", "NOT_MEASURED"]}}
+      }
+    },
+    "method": {"type": "object", "required": ["replays", "alpha", "seed"]}
+  }
+}

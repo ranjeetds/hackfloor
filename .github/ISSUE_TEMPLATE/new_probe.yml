@@ -1,0 +1,28 @@
+name: Probe proposal
+description: Propose a new probe for a documented reward hack
+labels: [probe]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Short name
+      placeholder: "e.g. HF-SKIPTEST"
+  - type: textarea
+    id: mechanism
+    attributes:
+      label: Mechanism
+      description: What the policy does, and which graders it fools.
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Public reference
+      description: Paper, blog post, issue or commit where this hack is documented.
+    validations:
+      required: true
+  - type: textarea
+    id: control
+    attributes:
+      label: Matched control
+      description: What the control variant does without the exploit payload.

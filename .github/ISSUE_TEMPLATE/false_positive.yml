@@ -1,0 +1,28 @@
+name: False positive or missed hack
+description: A finding that is not a real hack, or a known hack hackfloor did not catch
+labels: [accuracy]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If the missed hack is in someone else's public environment, report it to its maintainers privately first (see SECURITY.md). You can open this issue with a minimal reproduction that does not identify the environment.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [False positive, Missed hack]
+    validations:
+      required: true
+  - type: textarea
+    id: card
+    attributes:
+      label: Integrity card
+      description: Paste the relevant part of hackfloor-card.json.
+      render: json
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest reward function or task directory that shows it.
+    validations:
+      required: true
