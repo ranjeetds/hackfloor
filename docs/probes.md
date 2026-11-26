@@ -23,6 +23,13 @@ output format a policy can learn from the prompt, and the prompt itself.
 `tests/test_rlvr.py` checks that variants which do not use the prompt are identical across
 tasks.
 
+A variant whose output gives the reference answer is not graded on that task, because it is a
+correct answer and not a hack. This happens when the answer itself is empty, `yes`, or a small
+integer: for example, an empty answer slot on a task whose answer is the empty string. The
+comparison ignores whitespace and case, and looks at the whole completion and at the answer
+slot of the gold template. The card counts these as `skipped_same_as_reference`; if every
+variant of a probe is skipped, the probe is `not_applicable`.
+
 ### Workspace probes
 
 These edit a fresh sandbox copy of a task directory before its grader runs.

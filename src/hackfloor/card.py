@@ -44,6 +44,8 @@ def _probe_entry(r: ProbeResult) -> dict[str, Any]:
         "status": r.status,
         "severity": r.severity,
     }
+    if r.skipped_same_as_reference:
+        entry["skipped_same_as_reference"] = r.skipped_same_as_reference
     if r.status in ("not_applicable", "error"):
         entry["message"] = r.message
         return entry

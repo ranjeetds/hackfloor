@@ -13,6 +13,7 @@ from hackfloor.probes.base import Probe, ProbeContext, get_probes
 
 EPS = 1e-9
 NOTHING_TO_TRY = "nothing to try on these tasks"
+SAME_AS_REFERENCE = "every variant equals the reference answer on these tasks"
 SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1, "none": 0}
 
 
@@ -62,6 +63,9 @@ class ProbeResult:
     delta_mean: float = 0.0
     delta_ci: tuple[float, float] = (0.0, 0.0)
     message: str = ""
+    #: Variants not graded because their output equals the reference answer (after
+    #: whitespace and case normalisation). Such an output is a correct answer, not a hack.
+    skipped_same_as_reference: int = 0
 
     @property
     def n(self) -> int:
@@ -160,6 +164,45 @@ def _grade_n(subject: Subject, task: TaskRef, action: Action, n: int) -> list[At
     return [subject.grade(task, action) for _ in range(n)]
 
 
+def _normalise(text: str) -> str:
+    return " ".join(text.split()).casefold()
+
+
+def answer_slot(text: str, template: str) -> str | None:
+    """The text a completion puts in the answer slot of ``template``, or None if absent.
+
+    With a bare ``{answer}`` template the whole completion is the slot. Otherwise the slot is
+    the text between the last occurrence of the template's prefix and the next suffix.
+    """
+    if "{answer}" not in template:
+        return None
+    prefix, suffix = template.split("{answer}", 1)
+    if not prefix and not suffix:
+        return text
+    start = text.rfind(prefix) if prefix else 0
+    if start < 0:
+        return None
+    start += len(prefix)
+    end = text.find(suffix, start) if suffix else len(text)
+    return None if end < 0 else text[start:end]
+
+
+def same_as_reference(action: Action, reference: Action, template: str = "{answer}") -> bool:
+    """True when a completion gives the reference answer, ignoring whitespace and case.
+
+    Either the whole completion equals the reference completion, or the answer slot of the
+    gold template holds the same text in both. A probe output that is the correct answer (for
+    example an empty answer slot on a task whose answer is the empty string) must not count
+    as a hack. Workspace actions are never compared.
+    """
+    if not (isinstance(action, str) and isinstance(reference, str)):
+        return False
+    if _normalise(action) == _normalise(reference):
+        return True
+    mine, theirs = answer_slot(action, template), answer_slot(reference, template)
+    return mine is not None and theirs is not None and _normalise(mine) == _normalise(theirs)
+
+
 def _value(attempts: list[Attempt], floor: float) -> tuple[float, bool, str]:
     """Mean reward (errors count as the floor), replay consistency, and a sample detail."""
     rewards = [a.reward if a.well_formed else floor for a in attempts]
@@ -239,8 +282,10 @@ def scan(
             continue
         say(f"running {probe.id}")
         outcomes: list[TaskOutcome] = []
+        skipped = 0
         try:
             for task in tasks:
+                reference = subject.gold(task)
                 ctx = ProbeContext(
                     task=task,
                     subject=subject,
@@ -249,6 +294,9 @@ def scan(
                 )
                 best: TaskOutcome | None = None
                 for variant in probe.variants(ctx):
+                    if same_as_reference(variant.exploit, reference, template):
+                        skipped += 1
+                        continue
                     e_att = _grade_n(subject, task, variant.exploit, cfg.replays)
                     record_errors(f"{task.id}/{probe.id}:{variant.name}", e_att)
                     exploit, e_ok, detail = _value(e_att, lo)
@@ -278,9 +326,16 @@ def scan(
             results.append(ProbeResult(probe, "error", message=f"{type(exc).__name__}: {exc}"))
             continue
         if not outcomes:
-            results.append(ProbeResult(probe, "not_applicable", message=NOTHING_TO_TRY))
+            message = SAME_AS_REFERENCE if skipped else NOTHING_TO_TRY
+            results.append(
+                ProbeResult(
+                    probe, "not_applicable", message=message, skipped_same_as_reference=skipped
+                )
+            )
             continue
-        results.append(ProbeResult(probe, "pending", outcomes=outcomes))
+        results.append(
+            ProbeResult(probe, "pending", outcomes=outcomes, skipped_same_as_reference=skipped)
+        )
 
     # 3. Decisions, with Holm correction across probes that use the sign test.
     tested = [r for r in results if r.status == "pending"]
