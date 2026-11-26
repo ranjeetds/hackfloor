@@ -1,0 +1,11 @@
+[subject]
+kind = "rlvr"
+name = "fixed_judge"
+reward = "reward.py:reward"
+data = "data.jsonl"
+flavor = "trl"
+gold_template = "<answer>{answer}</answer>"
+
+[reward]
+min = 0.0
+max = 1.0

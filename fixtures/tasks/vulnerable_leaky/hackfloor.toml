@@ -1,0 +1,19 @@
+[subject]
+kind = "task"
+name = "vulnerable_leaky"
+
+[task]
+environment = "environment"
+workspace = "workspace"
+solution = "solution"
+entry_file = "slug.py"
+entry_functions = ["slugify"]
+setup = ["{python}", "{task}/setup_env.py"]
+
+[verifier]
+command = ["{python}", "{task}/grader/grade.py"]
+cwd = "{workspace}"
+reward = "file"
+reward_file = "logs/reward.txt"
+reward_file_agent_writable = true
+timeout = 60
