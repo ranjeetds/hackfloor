@@ -59,6 +59,15 @@ def _parser() -> argparse.ArgumentParser:
         default="high",
         help="exit 1 if any finding is at least this severe (default: high)",
     )
+    s.add_argument(
+        "--partial-credit",
+        type=float,
+        default=0.1,
+        metavar="FRACTION",
+        help="report a significant effect with no hack-pass whose best exploit reward is at "
+        "most this fraction of the reward range as info, not a finding; 0 disables "
+        "(default: 0.1)",
+    )
     s.add_argument("--quiet", action="store_true", help="print only the verdict line")
 
     sub.add_parser("probes", help="list the available probes")
@@ -90,6 +99,7 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
     config = ScanConfig(
         replays=max(1, args.replays),
         seed=args.seed,
+        partial_credit=max(0.0, args.partial_credit),
         probe_ids=[p.strip() for p in args.probes.split(",")] if args.probes else None,
     )
     if console.is_interactive:
@@ -100,7 +110,10 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
     command = "hackfloor " + " ".join(shlex.quote(a) for a in argv)
     card = build_card(result, command=command)
     if args.quiet:
-        console.print(f"{card['verdict']} level={card['level']} findings={len(result.findings)}")
+        console.print(
+            f"{card['verdict']} level={card['level']} findings={len(result.findings)}"
+            f" partial_credit={len(result.partial_credit)}"
+        )
     else:
         render_terminal(card, console, target=args.target)
     out = write_card(card, args.out)

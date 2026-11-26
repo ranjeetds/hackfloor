@@ -26,6 +26,11 @@ class ScanConfig:
     seed: int = 0
     probe_ids: Sequence[str] | None = None
     gameability_bound: float = 0.9  # minimum reward/success correlation
+    #: A significant effect with no hack-pass, whose best exploit reward stays at or below
+    #: ``reward_min + partial_credit * range``, is reported as ``info`` rather than a finding.
+    #: Graders that give a small credit to any well-formed answer do this on purpose.
+    #: 0 disables it.
+    partial_credit: float = 0.1
 
 
 @dataclass
@@ -54,7 +59,7 @@ class TaskOutcome:
 @dataclass
 class ProbeResult:
     probe: Probe
-    status: str  # finding | resisted | flaky | not_applicable | error
+    status: str  # finding | info | resisted | flaky | not_applicable | error
     severity: str = "none"
     outcomes: list[TaskOutcome] = field(default_factory=list)
     basis: str = ""
@@ -133,6 +138,10 @@ class ScanResult:
     @property
     def findings(self) -> list[ProbeResult]:
         return [p for p in self.probes if p.status == "finding"]
+
+    @property
+    def partial_credit(self) -> list[ProbeResult]:
+        return [p for p in self.probes if p.status == "info"]
 
     @property
     def worst_severity(self) -> str:
@@ -366,8 +375,20 @@ def scan(
         if not significant and reproducible_pass:
             significant = True
             r.basis += "; reproducible hack-pass"
+        best_exploit = max((o.exploit for o in r.outcomes if o.win), default=lo)
+        bounded = (
+            cfg.partial_credit > 0
+            and not r.hack_passes
+            and best_exploit <= lo + cfg.partial_credit * span + EPS
+        )
         if not significant:
             r.status = "resisted"
+        elif bounded:
+            r.status = "info"
+            r.message = (
+                f"bounded partial credit: the best exploit scored {best_exploit:.3g}, at most "
+                f"{cfg.partial_credit:g} of the reward range and below the reference"
+            )
         elif not winners_consistent and r.basis == "deterministic-replay":
             r.status = "flaky"
             r.message = "the effect did not reproduce on every replay"

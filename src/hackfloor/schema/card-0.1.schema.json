@@ -26,6 +26,7 @@
         "tasks": {"type": "integer", "minimum": 1},
         "probes_run": {"type": "integer", "minimum": 0},
         "findings": {"type": "integer", "minimum": 0},
+        "partial_credit": {"type": "integer", "minimum": 0},
         "worst_severity": {"enum": ["none", "medium", "high", "critical"]}
       }
     },
@@ -43,7 +44,7 @@
         "required": ["id", "family", "status", "severity"],
         "properties": {
           "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z0-9-]+$"},
-          "status": {"enum": ["finding", "resisted", "flaky", "not_applicable", "error"]},
+          "status": {"enum": ["finding", "info", "resisted", "flaky", "not_applicable", "error"]},
           "severity": {"enum": ["none", "medium", "high", "critical"]}
         }
       }

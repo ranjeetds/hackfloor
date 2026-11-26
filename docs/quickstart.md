@@ -39,7 +39,7 @@ The scan:
 
 | Column | Meaning |
 |---|---|
-| result | `FAIL` (a finding), `PASS` (resisted), `WARN` (did not reproduce on every replay) |
+| result | `FAIL` (a finding), `PASS` (resisted), `INFO` (bounded partial credit, not a finding), `WARN` (did not reproduce on every replay) |
 | severity | `critical`: reached the reference score on at least one task; `high`: mean gap at least half the reference-to-null gap; `medium`: smaller but significant |
 | Δ floor | mean reward of the exploit minus its matched control |
 | hack-pass | tasks where the exploit reached the reference score |
