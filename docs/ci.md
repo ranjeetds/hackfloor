@@ -60,3 +60,34 @@ repos:
 The hook takes no file names; the target and options go in `args`. Set `files` so it runs only
 when the environment changes. pre-commit fails a hook that leaves new files behind, so list the
 card directory and `__pycache__/` in `.gitignore`.
+
+## pytest
+
+Installing hackfloor registers a pytest plugin with a `hackfloor` fixture:
+
+```python
+import pytest
+
+
+@pytest.mark.hackfloor
+def test_grader_resists_reward_hacks(hackfloor):
+    hackfloor.assert_resists("envs/my_task")
+
+
+def test_reward_function(hackfloor):
+    card = hackfloor.assert_resists(
+        "rewards.py:reward", data="rows.jsonl", gold_template="<answer>{answer}</answer>"
+    )
+    assert card["checks"]["statistical.gameability_gap"]["status"] == "PASS"
+```
+
+`assert_resists(target, fail_on="high", probes=None, replays=1, seed=0, **target_options)`
+fails the test with one line per finding at or above `fail_on`, and also fails when the scan is
+uncalibrated. It returns the integrity card. `hackfloor.scan(...)` returns the card without
+asserting. Run `pytest --hackfloor-cards cards/` to keep each test's card, and `-m hackfloor` to
+select the marked tests.
+
+Outside pytest, the same functions are in `hackfloor.testing` (`assert_resists`, `run_scan`).
+
+The plugin also loads in pytest runs that graders start. It only adds an option, a marker and
+a fixture, and imports nothing from hackfloor's scanner until the fixture is used.
