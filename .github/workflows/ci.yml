@@ -33,7 +33,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv venv && uv pip install -e ".[dev]"
+      # With python-version set, setup-uv has already created and activated .venv,
+      # so a second `uv venv` would fail without --clear.
+      - run: uv pip install -e ".[dev]"
       - run: uv run pytest
       - name: Scan the fixtures
         run: |
