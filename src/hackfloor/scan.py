@@ -365,6 +365,12 @@ def scan(
         )
         if not significant:
             r.status = "resisted"
+        elif r.probe.needs_hack_pass and not reproducible_pass:
+            r.status = "info"
+            r.message = (
+                f"graded credit below the reference: the best attempt scored {best_exploit:.3g} "
+                "and none reached the reference"
+            )
         elif bounded:
             r.status = "info"
             r.message = (

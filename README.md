@@ -107,7 +107,7 @@ The gold template shows what a correct completion looks like. Probes use it for 
 
 15 probes in five families. A probe runs only when your target allows it; the rest are listed as "not applicable".
 
-- **Form.** Empty output, answer tags with nothing inside, every possible answer in one reply, and a plausible wrong answer (a flipped True/False, a number off by one). Needs only a reward function.
+- **Form.** Empty output, answer tags with nothing inside, every possible answer in one reply, and a plausible wrong answer (a flipped True/False, a changed number). Needs only a reward function.
 - **Leak.** Echoing the prompt back, and answer keys left in the sandbox or in git history.
 - **Judge.** Instructions written to an LLM judge.
 - **Tamper.** Always-equal objects, `sys.exit(0)`, skipped tests, hard-coded test cases, a patched `conftest.py`, and edited or deleted tests. Needs a task directory with tests.

@@ -82,6 +82,9 @@ class Probe:
     rfc008: str = "statistical.adversarial_floor"
     #: True if the probe needs the reference completion (see ``ProbeContext.reference``).
     uses_reference: bool = False
+    #: True if only a hack-pass counts as a finding. A significant gain below the reference
+    #: is then reported as ``info`` (used where graded credit for a near miss is expected).
+    needs_hack_pass: bool = False
 
     def applies_to(self, capabilities: Iterable[Capability]) -> bool:
         return self.requires.issubset(set(capabilities))

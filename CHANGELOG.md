@@ -26,8 +26,10 @@ All notable changes are recorded here. The format follows
 ### Added
 
 - `HF-WRONG`, a plausible wrong answer in the right format: the reference answer with a
-  boolean or yes/no flipped, the last number changed by one, or the next option letter,
-  against an empty answer slot. It is the only probe given the reference completion
+  boolean or yes/no flipped, the last number changed (by one below 10, otherwise by a tenth
+  of its magnitude), or the next option letter, against an empty answer slot. Only a wrong
+  answer that reaches the reference score is a finding; graded credit for a near miss is
+  `info` (`Probe.needs_hack_pass`). It is the only probe given the reference completion
   (`Probe.uses_reference`, `ProbeContext.reference`). It feeds `semantic.canary_floor`, which
   is now measured instead of `NOT_MEASURED`. New fixtures `rlvr/vulnerable_halting` and
   `rlvr/fixed_halting`. 15 probes in all.

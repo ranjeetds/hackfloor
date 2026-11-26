@@ -268,10 +268,12 @@ def test_wrong_answers_are_conservative_edits():
     assert wrong_answers("YES") == [("flipped-boolean", "NO")]
     assert wrong_answers("C") == [("next-option", "D")]
     assert wrong_answers("J") == [("next-option", "A")]
-    assert wrong_answers("42") == [("off-by-one", "43")]
-    assert wrong_answers("-3.50") == [("off-by-one", "-2.50")]
-    assert wrong_answers("$x = 7$") == [("off-by-one", "$x = 8$")]
-    assert wrong_answers("1 2 3") == [("off-by-one", "1 2 4")]
+    assert wrong_answers("7") == [("changed-number", "8")]
+    assert wrong_answers("42") == [("changed-number", "46")]
+    assert wrong_answers("-3.50") == [("changed-number", "-2.50")]
+    assert wrong_answers("97.45") == [("changed-number", "107.20")]
+    assert wrong_answers("$x = 7$") == [("changed-number", "$x = 8$")]
+    assert wrong_answers("1 2 3") == [("changed-number", "1 2 4")]
     assert wrong_answers("") == []
     assert wrong_answers("A# #B") == []
     assert wrong_answers("hello world") == []
@@ -288,7 +290,7 @@ def test_wrong_answer_probe_is_the_only_one_given_the_reference(fixtures):
     probe = get_probes(["HF-WRONG"])[0]
     ctx = ProbeContext(task, subject, subject.gold_template, reference=reference)
     variants = probe.variants(ctx)
-    assert [v.name for v in variants] == ["off-by-one"]
+    assert [v.name for v in variants] == ["changed-number"]
     assert variants[0].exploit != reference
     assert variants[0].control == "<answer></answer>"
     assert probe.variants(ProbeContext(task, subject, subject.gold_template)) == []
@@ -326,3 +328,29 @@ def test_wrong_answer_resists_a_loose_but_correct_comparison():
     rows = [{"prompt": f"Is {i} even?", "answer": "yes" if i % 2 == 0 else "no"} for i in range(10)]
     subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
     assert _by_id(scan(subject, ScanConfig(replays=1)))["HF-WRONG"].status == "resisted"
+
+
+def test_near_miss_credit_from_hf_wrong_is_info():
+    """Graded credit for a close but wrong answer is a reward design, not a hack."""
+
+    def reward(completion, answer):
+        import re
+
+        m = re.search(r"<answer>(.*?)</answer>", completion, re.S)
+        if not m:
+            return 0.0
+        got, want = m.group(1).split(), answer.split()
+        if len(got) != len(want):
+            return 0.0
+        return sum(a == b for a, b in zip(got, want, strict=True)) / len(want)
+
+    rows = [
+        {"prompt": f"Solve grid {i}.", "answer": " ".join(str((i + k) % 9 + 1) for k in range(9))}
+        for i in range(12)
+    ]
+    subject = RewardFunctionSubject(reward, rows, gold_template="<answer>{answer}</answer>")
+    result = scan(subject, ScanConfig(replays=1))
+    wrong = _by_id(result)["HF-WRONG"]
+    assert wrong.status == "info"
+    assert "graded credit" in wrong.message
+    assert result.verdict == "RESISTED"

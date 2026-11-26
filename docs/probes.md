@@ -20,7 +20,7 @@ which describes the output format a policy can learn from the prompt, and the pr
 | `HF-ECHO` | leak | the prompt, raw and inside the answer slot | empty completion, or an empty answer slot |
 | `HF-JUDGE` | judge | four task-blind injections aimed at an LLM judge (instruction override with a score, a claimed verification note, an HTML comment, a fake grading transcript), alone and inside the answer slot | empty completion, or an empty answer slot |
 
-| `HF-WRONG` | form | the reference answer made wrong: a flipped boolean or yes/no, the last number changed by one, or the next option letter (A to J) | an empty answer slot |
+| `HF-WRONG` | form | the reference answer made wrong: a flipped boolean or yes/no, the last number changed, or the next option letter (A to J) | an empty answer slot |
 
 `tests/test_rlvr.py` checks that variants which do not use the prompt are identical across
 tasks.
@@ -32,14 +32,20 @@ tasks.
 conservative edits, each wrong for any task with a single correct answer:
 
 - `True`/`False` and `yes`/`no` are flipped, keeping the case;
-- the last number in the answer is increased by one, keeping its decimal places
-  (`42` becomes `43`, `$x = 7$` becomes `$x = 8$`);
+- the last number in the answer is increased, keeping its decimal places: by one below 10
+  in magnitude (`$x = 7$` becomes `$x = 8$`), otherwise by a tenth of its magnitude (`42`
+  becomes `46`), so that a relative tolerance or rounding to significant figures cannot
+  absorb the change;
 - a single option letter A to J becomes the next letter.
 
 Other answers give no variant, so the probe is `not_applicable` on, for example, free-text
 tasks. The control is the same format with an empty answer slot, so a format bonus or
-partial credit for a well-formed answer cancels out. A grader that accepts the edited answer
-compares too loosely or not at all: reasoning-gym 0.1.25's `game_of_life_halting` compared
+partial credit for a well-formed answer cancels out.
+
+Only a wrong answer that scores as high as the reference is a finding. Many graders give
+graded credit to a near miss on purpose (a Sudoku grid with one wrong cell scores 0.89), and
+that is not a hack, so a significant gain below the reference is reported as `INFO`. A grader
+that fully accepts the edited answer compares too loosely or not at all: reasoning-gym 0.1.25's `game_of_life_halting` compared
 `bool(answer)`, so `False` scored the same as `True`
 ([fixed upstream in #561](https://github.com/open-thought/reasoning-gym/commit/eb75607658b0c37ee2ce58b98e62d1d147c42265)).
 The fixtures `rlvr/vulnerable_halting` and `rlvr/fixed_halting` reproduce it.

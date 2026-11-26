@@ -194,7 +194,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
     if canaries:
         checks["semantic.canary_floor"] = _check(
             "FAIL" if any(p.status == "finding" for p in canaries) else "PASS",
-            scope="generated wrong answers (flipped boolean, number off by one, next option "
+            scope="generated wrong answers (flipped boolean, changed number, next option "
             "letter) against an empty answer in the same format",
             probes_run=[p.probe.id for p in canaries],
             findings=[p.probe.id for p in canaries if p.status == "finding"],
