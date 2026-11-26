@@ -6,11 +6,71 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from hackfloor.adapters.rlvr import RewardFunctionSubject
+from hackfloor.adapters.base import CompletionSubject
+from hackfloor.adapters.rlvr import RewardFunctionSubject, load_callable
 from hackfloor.adapters.taskdir import CONFIG_NAME, TaskDirSubject, read_config
 from hackfloor.core import Subject
 
-__all__ = ["RewardFunctionSubject", "TaskDirSubject", "resolve_subject"]
+__all__ = [
+    "CompletionSubject",
+    "OpenEnvSubject",
+    "ReasoningGymSubject",
+    "RewardFunctionSubject",
+    "TaskDirSubject",
+    "VerifiersSubject",
+    "resolve_subject",
+]
+
+#: Target prefixes that name a framework instead of a path.
+PREFIXES = ("reasoning-gym:", "verifiers:", "subject:")
+
+
+def __getattr__(name: str) -> Any:
+    # Framework adapters import lazily so their optional dependencies stay optional.
+    if name == "ReasoningGymSubject":
+        from hackfloor.adapters.reasoning_gym import ReasoningGymSubject
+
+        return ReasoningGymSubject
+    if name == "VerifiersSubject":
+        from hackfloor.adapters.verifiers import VerifiersSubject
+
+        return VerifiersSubject
+    if name == "OpenEnvSubject":
+        from hackfloor.adapters.openenv import OpenEnvSubject
+
+        return OpenEnvSubject
+    raise AttributeError(name)
+
+
+def _cwd_importable() -> None:
+    if str(Path.cwd()) not in sys.path:
+        sys.path.insert(0, str(Path.cwd()))
+
+
+def _framework_subject(
+    target: str, *, gold_template: str | None, limit: int | None, seed: int
+) -> Subject:
+    prefix, _, rest = target.partition(":")
+    if prefix == "reasoning-gym":
+        from hackfloor.adapters.reasoning_gym import ReasoningGymSubject
+
+        subject = ReasoningGymSubject.create(rest, size=limit or 20, seed=seed)
+        if gold_template:
+            subject.gold_template = gold_template
+        return subject
+    _cwd_importable()
+    factory = load_callable(rest)
+    if prefix == "verifiers":
+        from hackfloor.adapters.verifiers import VerifiersSubject
+
+        return VerifiersSubject(
+            factory(), name=target, gold_template=gold_template or "{answer}", limit=limit
+        )
+    subject = factory()
+    for attr in ("tasks", "gold", "null", "grade", "capabilities"):
+        if not callable(getattr(subject, attr, None)):
+            raise ValueError(f"{rest} returned an object without a callable {attr}()")
+    return subject
 
 
 def _rlvr_from_config(target: Path, cfg: dict[str, Any], **overrides: Any) -> Subject:
@@ -41,13 +101,20 @@ def resolve_subject(
     flavor: str | None = None,
     gold_template: str | None = None,
     limit: int | None = None,
+    seed: int = 0,
 ) -> Subject:
     """Turn a CLI target into a Subject.
 
+    * ``reasoning-gym:<dataset>``: a reasoning-gym dataset (``limit`` rows, ``seed``).
+    * ``verifiers:<module:factory>``: a factory returning a verifiers Taskset or tasks.
+    * ``subject:<module:factory>``: a factory returning any object implementing Subject,
+      for example an ``OpenEnvSubject``.
     * ``file.py:fn`` or ``module:fn`` with ``data``: a reward function.
     * a directory with ``hackfloor.toml``: an RLVR subject or a single task.
     * a directory whose subdirectories hold task ``hackfloor.toml`` files: a task suite.
     """
+    if target.startswith(PREFIXES):
+        return _framework_subject(target, gold_template=gold_template, limit=limit, seed=seed)
     path = Path(target)
     if path.is_dir():
         config = path / CONFIG_NAME
@@ -69,8 +136,7 @@ def resolve_subject(
     if ":" in target:
         if not data:
             raise ValueError("a reward-function target needs --data rows.jsonl")
-        if str(Path.cwd()) not in sys.path:
-            sys.path.insert(0, str(Path.cwd()))
+        _cwd_importable()
         return RewardFunctionSubject.from_paths(
             target,
             data,
