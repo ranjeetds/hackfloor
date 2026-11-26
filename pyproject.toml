@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hackfloor"
-version = "0.2.0.dev0"
+version = "0.2.0"
 description = "Prove that agents which don't solve the task can't score: adversarial probes for RL environment graders and agent benchmarks."
 readme = "README.md"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ requires-python = ">=3.10"
 authors = [{ name = "Ranjeet Dhumal", email = "ranjeetrdhumal@gmail.com" }]
 keywords = ["reinforcement-learning", "reward-hacking", "evaluation", "rl-environments", "benchmarks", "llm"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: Apache Software License",
@@ -40,6 +40,8 @@ docs = ["mkdocs-material>=9.5,<10"]
 
 [project.urls]
 Homepage = "https://github.com/ranjeetds/hackfloor"
+Documentation = "https://ranjeetds.github.io/hackfloor/"
+Changelog = "https://github.com/ranjeetds/hackfloor/blob/main/CHANGELOG.md"
 Issues = "https://github.com/ranjeetds/hackfloor/issues"
 Source = "https://github.com/ranjeetds/hackfloor"
 

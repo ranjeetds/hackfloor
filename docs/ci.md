@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: hackfloor
-        uses: ranjeetds/hackfloor@main  # pin to a release tag or commit once one exists
+        uses: ranjeetds/hackfloor@v0.2.0
         with:
           target: envs/my_task
           args: --replays 3
@@ -50,7 +50,7 @@ verdict.
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/ranjeetds/hackfloor
-    rev: main  # pin to a release tag or commit once one exists
+    rev: v0.2.0
     hooks:
       - id: hackfloor
         args: [envs/my_task, --quiet, --replays, "1", --out, .hackfloor/card.json]

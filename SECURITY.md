@@ -17,7 +17,7 @@ sooner.
 
 ## Supported versions
 
-hackfloor is pre-release. Only the latest commit on `main` receives fixes.
+hackfloor is alpha software. Fixes go into the latest release and `main`.
 
 ## Scope and limits
 

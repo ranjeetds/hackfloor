@@ -4,7 +4,11 @@ All notable changes are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] (0.2.0.dev0)
+## [Unreleased]
+
+## [0.2.0] - 2026-11-26
+
+First release on PyPI.
 
 ### Fixed
 
@@ -28,8 +32,9 @@ All notable changes are recorded here. The format follows
 - `hackfloor.testing.assert_resists` and a pytest plugin with a `hackfloor` fixture.
 - A mkdocs-material documentation site with a GitHub Pages workflow.
 - CI jobs for the integrations and the action self-test.
+- A release workflow that publishes to TestPyPI and PyPI with Trusted Publishing.
 
-## 0.1.0.dev0
+## 0.1.0.dev0 (not released)
 
 ### Added
 
@@ -45,3 +50,6 @@ All notable changes are recorded here. The format follows
 - Integrity card v0.1 (JSON, with schema) using OpenEnv RFC 008 check ids, a Markdown report
   and a rich terminal view.
 - Vulnerable and fixed fixture environments, tests, CI and documentation outline.
+
+[Unreleased]: https://github.com/ranjeetds/hackfloor/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ranjeetds/hackfloor/releases/tag/v0.2.0
