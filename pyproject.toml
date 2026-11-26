@@ -45,6 +45,9 @@ Source = "https://github.com/ranjeetds/hackfloor"
 [project.scripts]
 hackfloor = "hackfloor.cli:main"
 
+[project.entry-points.pytest11]
+hackfloor = "hackfloor.pytest_plugin"
+
 [project.entry-points."hackfloor.probes"]
 builtin = "hackfloor.probes:BUILTIN_PROBES"
 
