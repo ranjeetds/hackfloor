@@ -6,6 +6,15 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Terminal output no longer uses green or cyan: `PASS` is bold, `INFO` and the header are
+  blue, and the `RESISTED` badge is blue; failures stay red.
+- Cleaner README and docs: a centred header, one real scan image, and a neutral palette
+  (white or near-black, greys, one indigo accent, muted red for failures) in the docs theme.
+- README and docs images are now PNGs rendered from real scans by
+  `scripts/render_readme_assets.py`, in light and dark variants.
+
 ## [0.2.1] - 2026-11-26
 
 ### Added
