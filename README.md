@@ -264,7 +264,7 @@ Checkmarks are given only where the project's own README (or, for OpenEnv, its s
 | Container sandbox | planned (v0.3) | | ◐ (`--sandbox`, marked work in progress) | |
 | Uses OpenEnv RFC 008 check ids | ✓ | | | ✓ (defines them) |
 
-gradecheck is the closest project in spirit and its README is worth reading. BenchJack audits whole benchmarks and found exploits in all eight it studied. OpenEnv's validator is where these checks are headed; hackfloor aims to be a probe panel it can use, not a replacement.
+gradecheck is the closest project in spirit and its README is worth reading. BenchJack audits whole benchmarks and catalogued 219 distinct flaws in eight classes across the 10 agent benchmarks it studied. OpenEnv's validator is where these checks are headed; hackfloor aims to be a probe panel it can use, not a replacement.
 
 ## Integrations
 
