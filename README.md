@@ -67,7 +67,7 @@ Output:
 
 ```text
 ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ hackfloor 0.2.1  ·  fixtures/rlvr/vulnerable_math  ·  rlvr · 40 tasks                            │
+│ hackfloor 0.2.2  ·  fixtures/rlvr/vulnerable_math  ·  rlvr · 40 tasks                            │
 │ calibration  reference 1.00   null policy 0.00   calibration PASS                                │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
 probe      what it tries                  result  severity  Δ floor  hack-pass
@@ -149,7 +149,7 @@ Setup for each is in [Adapters](https://ranjeetds.github.io/hackfloor/adapters/)
 ## Run it in CI
 
 ```yaml
-- uses: ranjeetds/hackfloor@v0.2.1
+- uses: ranjeetds/hackfloor@v0.2.2
   with:
     target: envs/my_task
     fail-on: high
@@ -174,7 +174,7 @@ The step fails when a finding meets `fail-on`. A pre-commit hook and a pytest fi
   author  = {Dhumal, Ranjeet},
   title   = {hackfloor: adversarial probes for RL environment graders and agent benchmarks},
   year    = {2026},
-  version = {0.2.1},
+  version = {0.2.2},
   url     = {https://github.com/ranjeetds/hackfloor},
   license = {Apache-2.0}
 }

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hackfloor"
-version = "0.2.1"
+version = "0.2.2"
 description = "Prove that agents which don't solve the task can't score: adversarial probes for RL environment graders and agent benchmarks."
 readme = "README.md"
 license = "Apache-2.0"

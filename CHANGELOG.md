@@ -6,6 +6,34 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-27
+
+### Fixed
+
+- Scans of more than about 1,000 tasks crashed with `OverflowError` at the end of the run.
+  The exact binomial sums multiplied huge integers by floats. The binomial tails and the
+  Clopper-Pearson interval now use the regularised incomplete beta function in log space, the
+  AUROC is computed from ranks, and the bootstrap's work is bounded for large task sets. Results
+  up to 1,000 tasks are unchanged; a 20,000-row scan of a simple reward function went from
+  about 8.5 minutes to about 15 seconds.
+- A reward function that raised on probe outputs (for example `int(completion)`) was reported
+  `RESISTED` with exit code 0, because every failed attempt scored the floor and looked like
+  resistance. A probe whose attempts mostly failed (an error, or a reward outside the declared
+  range) is now not evaluated (status `error`), and a scan with no findings and such a probe is
+  `INCONCLUSIVE` (exit code 2, level L0). `statistical.adversarial_floor` is `NOT_MEASURED`
+  then. Findings are kept. The terminal prints how many grader calls failed and the first
+  error, the `--quiet` line gains `grader_errors=N`, and the card records the counts per probe.
+- Error messages, output paths and the `probes` listing no longer pass through rich markup, so
+  text in square brackets (for example the `hackfloor[reasoning-gym]` install hint) is shown
+  instead of being swallowed, and a path such as `x[/y].py` no longer crashes the CLI.
+- The HF-WRONG row on the Probes page was cut off from its table by a blank line, and the
+  README said eight more probes instead of nine. Tests now guard both.
+
+### Added
+
+- The `INCONCLUSIVE` verdict (also in the card schema, the Action's `verdict` output and
+  `assert_resists`, which fails on it like on `UNCALIBRATED`).
+
 ### Changed
 
 - Terminal output no longer uses green or cyan: `PASS` is bold, `INFO` and the header are
@@ -109,6 +137,7 @@ First release on PyPI.
   and a rich terminal view.
 - Vulnerable and fixed fixture environments, tests, CI and documentation outline.
 
-[Unreleased]: https://github.com/ranjeetds/hackfloor/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/ranjeetds/hackfloor/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/ranjeetds/hackfloor/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/ranjeetds/hackfloor/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/ranjeetds/hackfloor/releases/tag/v0.2.0
