@@ -46,7 +46,8 @@ trained long enough against a grader that accepts them.
 | **Severity** | `critical`: a hack-pass. `high`: the mean gap is at least half the distance from null to reference. `medium`: smaller, but still significant. |
 | **Replay** | Running the same attempt again to check the result is stable. A result that does not repeat is `WARN`. |
 | **Integrity card** | The JSON file every scan writes: the verdict, the level, each probe's numbers and the check ids. See [Integrity card](integrity-card.md). |
-| **Integrity level** | L0 (a serious finding), L1 (calibrated and none found). L2 and L3 are planned. A level describes this probe set at this version only. |
+| **Inconclusive** | A probe is not evaluated when the grader raised an error, or gave a reward outside the declared range, on more than half of its attempts: those attempts scored the floor, which looks like resistance but is not. It is shown as `ERROR`, and a scan with no findings and such a probe is `INCONCLUSIVE`, not `RESISTED`. |
+| **Integrity level** | L0 (a serious finding, a malformed reward, or a probe that could not be evaluated), L1 (calibrated and none found). L2 and L3 are planned. A level describes this probe set at this version only. |
 | **Gameability** | How well the reward tracks "solved" over all scripted attempts, as a correlation. A grader that rewards non-solutions scores low. See [Statistics](statistics.md#gameability). |
 | **RFC 008 check ids** | Names such as `semantic.floor_gap` taken from the OpenEnv validation proposal, so the card can be exported as OpenEnv `CheckResult` records. See [Background](background.md). |
 | **NOT_MEASURED** | A check this version does not run. It is never reported as a pass. |

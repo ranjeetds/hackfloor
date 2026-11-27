@@ -14,6 +14,8 @@ from hackfloor.probes.base import Probe, ProbeContext, answer_slot, get_probes
 EPS = 1e-9
 NOTHING_TO_TRY = "nothing to try on these tasks"
 SAME_AS_REFERENCE = "every variant equals the reference answer on these tasks"
+#: A clean probe result is not trusted when more than this share of its attempts failed.
+ERROR_SHARE = 0.5
 SEVERITY_ORDER = {"critical": 3, "high": 2, "medium": 1, "none": 0}
 
 
@@ -71,6 +73,11 @@ class ProbeResult:
     #: Variants not graded because their output equals the reference answer (after
     #: whitespace and case normalisation). Such an output is a correct answer, not a hack.
     skipped_same_as_reference: int = 0
+    #: Grader calls made for this probe (exploits and controls), how many of them raised an
+    #: error or gave a reward outside the range, and the first error text.
+    attempts: int = 0
+    failed_attempts: int = 0
+    first_error: str = ""
 
     @property
     def n(self) -> int:
@@ -155,13 +162,23 @@ class ScanResult:
             return "VULNERABLE"
         if self.findings:
             return "WEAK"
+        if self.unevaluated:
+            return "INCONCLUSIVE"
         return "RESISTED"
+
+    @property
+    def unevaluated(self) -> list[ProbeResult]:
+        """Probes that could not be evaluated: the probe broke, or the grader errored on most
+        of its attempts, so a clean result would say nothing about the hack."""
+        return [p for p in self.probes if p.status == "error"]
 
     @property
     def level(self) -> int | None:
         if self.calibration.sanity != "PASS":
             return None
         if SEVERITY_ORDER[self.worst_severity] >= SEVERITY_ORDER["high"] or self.errors:
+            return 0
+        if self.unevaluated:
             return 0
         return 1
 
@@ -222,13 +239,21 @@ def scan(
 
     samples: list[tuple[bool, float]] = []
 
-    def record_errors(where: str, attempts: list[Attempt], solved: bool = False) -> None:
+    def record_errors(where: str, attempts: list[Attempt], solved: bool = False) -> tuple[int, str]:
+        """Record failed attempts; return how many failed and the first error text."""
+        failed, first = 0, ""
         for a in attempts:
             samples.append((solved, a.reward if a.well_formed else lo))
+            problem = ""
             if a.error:
-                errors.append(f"{where}: {a.error}")
+                problem = a.error
             elif not (lo - EPS <= a.reward <= hi + EPS):
-                errors.append(f"{where}: reward {a.reward} outside [{lo}, {hi}]")
+                problem = f"reward {a.reward} outside [{lo}, {hi}]"
+            if problem:
+                errors.append(f"{where}: {problem}")
+                failed += 1
+                first = first or problem
+        return failed, first
 
     # 1. Calibration: the reference solution must beat doing nothing on every task.
     say("calibrating with the reference solution and the null policy")
@@ -273,6 +298,8 @@ def scan(
         say(f"running {probe.id}")
         outcomes: list[TaskOutcome] = []
         skipped = 0
+        attempts = failed_attempts = 0
+        first_error = ""
         try:
             for task in tasks:
                 reference = subject.gold(task)
@@ -289,13 +316,21 @@ def scan(
                         skipped += 1
                         continue
                     e_att = _grade_n(subject, task, variant.exploit, cfg.replays)
-                    record_errors(f"{task.id}/{probe.id}:{variant.name}", e_att)
+                    bad, first = record_errors(f"{task.id}/{probe.id}:{variant.name}", e_att)
+                    attempts += len(e_att)
+                    failed_attempts += bad
+                    first_error = first_error or first
                     exploit, e_ok, detail = _value(e_att, lo)
                     if variant.control is None:
                         control, c_ok = null[task.id], True
                     else:
                         c_att = _grade_n(subject, task, variant.control, cfg.replays)
-                        record_errors(f"{task.id}/{probe.id}:{variant.name}:control", c_att)
+                        bad, first = record_errors(
+                            f"{task.id}/{probe.id}:{variant.name}:control", c_att
+                        )
+                        attempts += len(c_att)
+                        failed_attempts += bad
+                        first_error = first_error or first
                         control, c_ok, _ = _value(c_att, lo)
                     outcome = TaskOutcome(
                         task.id,
@@ -325,7 +360,15 @@ def scan(
             )
             continue
         results.append(
-            ProbeResult(probe, "pending", outcomes=outcomes, skipped_same_as_reference=skipped)
+            ProbeResult(
+                probe,
+                "pending",
+                outcomes=outcomes,
+                skipped_same_as_reference=skipped,
+                attempts=attempts,
+                failed_attempts=failed_attempts,
+                first_error=first_error,
+            )
         )
 
     # 3. Decisions, with Holm correction across probes that use the sign test.
@@ -417,6 +460,16 @@ def scan(
                 r.severity = "high"
             else:
                 r.severity = "medium"
+
+    # A grader that raised on most of a probe's attempts was never really tested by it: the
+    # attempts scored the floor, which looks like resistance but is not evidence of it.
+    for r in tested:
+        if r.status == "resisted" and r.attempts and r.failed_attempts > r.attempts * ERROR_SHARE:
+            r.status = "error"
+            r.severity = "none"
+            r.message = (
+                f"not evaluated: the grader failed on {r.failed_attempts} of {r.attempts} attempts"
+            )
 
     return ScanResult(
         subject=subject.describe(),

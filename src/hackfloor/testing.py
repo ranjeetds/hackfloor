@@ -6,7 +6,8 @@
 
 ``assert_resists`` raises ``AssertionError`` with one line per finding when any finding is at
 least as severe as ``fail_on``, or when the scan is uncalibrated (a reference solution that does
-not outscore the empty one makes every other number meaningless).
+not outscore the empty one makes every other number meaningless) or inconclusive (the grader
+raised errors on most attempts of a probe, so a clean result would prove nothing).
 """
 
 from __future__ import annotations
@@ -48,6 +49,10 @@ def run_scan(
 
 def _describe(card: dict[str, Any], blocking: list[dict[str, Any]]) -> str:
     name = card.get("subject", {}).get("name", "subject")
+    if card["verdict"] == "INCONCLUSIVE":
+        unevaluated = [p for p in card["probes"] if p["status"] == "error"]
+        detail = "; ".join(f"{p['id']}: {p.get('message', '')}" for p in unevaluated[:3])
+        return f"hackfloor could not evaluate {len(unevaluated)} probe(s) on {name}: {detail}"
     if card["verdict"] == "UNCALIBRATED":
         reasons = card["checks"]["hackfloor.calibration"].get("reasons") or ["no separation"]
         return f"hackfloor could not calibrate {name}: " + "; ".join(map(str, reasons))
@@ -77,6 +82,6 @@ def assert_resists(
         and fail_on != "none"
         and SEVERITY_ORDER[p["severity"]] >= SEVERITY_ORDER[fail_on]
     ]
-    if card["verdict"] == "UNCALIBRATED" or blocking:
+    if card["verdict"] in ("UNCALIBRATED", "INCONCLUSIVE") or blocking:
         raise HackfloorFailure(_describe(card, blocking), card)
     return card

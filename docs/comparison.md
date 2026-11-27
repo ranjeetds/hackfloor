@@ -23,7 +23,7 @@ release on that date.
 
 ## Open-source tools
 
-| | [hackfloor](https://github.com/ranjeetds/hackfloor) 0.2.1 | [envdoctor](https://github.com/meagoodboy/envdoctor) 0.1.0 | [rlgate](https://github.com/deepak-foundryai/rlgate) 1.0.0 | [gradecheck](https://github.com/PoorvaJ-WW/gradecheck) 0.1.0 | [nudi](https://github.com/standardnormal-ai/nudi) 0.6.0 | [BenchJack](https://github.com/benchjack/benchjack) |
+| | [hackfloor](https://github.com/ranjeetds/hackfloor) 0.2.2 | [envdoctor](https://github.com/meagoodboy/envdoctor) 0.1.0 | [rlgate](https://github.com/deepak-foundryai/rlgate) 1.0.0 | [gradecheck](https://github.com/PoorvaJ-WW/gradecheck) 0.1.0 | [nudi](https://github.com/standardnormal-ai/nudi) 0.6.0 | [BenchJack](https://github.com/benchjack/benchjack) |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | How it finds hacks | 15 scripted probes | scripted policies and 13 checks | 76 rules in 6 steps | 5 scripted attacks | LLM agent swarms | static analysis plus an LLM agent |
 | Needs an LLM or API key | no | no | no (optional `--deep-review`) | no | yes | yes |
