@@ -8,10 +8,32 @@ from __future__ import annotations
 import asyncio
 import inspect
 from collections.abc import Iterable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from hackfloor.adapters.base import CompletionSubject
 from hackfloor.core import TaskRef
+
+
+def _resolve(result: Any) -> Any:
+    """Return a scorer's result, awaiting it when the scorer is async.
+
+    Inspect scorers are coroutines. ``asyncio.run`` cannot be called from a thread that
+    already runs an event loop (a notebook, an async test), so in that case the coroutine
+    runs on a short-lived worker thread instead.
+    """
+    if not inspect.isawaitable(result):
+        return result
+
+    async def _await() -> Any:
+        return await result
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(_await())
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, _await()).result()
 
 
 class InspectScorerSubject(CompletionSubject):
@@ -126,9 +148,7 @@ class InspectScorerSubject(CompletionSubject):
             metadata=sample.metadata or {},
         )
 
-        result = self.scorer(state, state.target)
-        if inspect.isawaitable(result):
-            result = asyncio.run(result)
+        result = _resolve(self.scorer(state, state.target))
 
         if result is None:
             raise ValueError("Inspect scorer returned no score")

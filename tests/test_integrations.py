@@ -71,6 +71,37 @@ def test_inspect_ai_scorer(scorer_name, verdict):
     assert _probes(result)["HF-DUMP"] == ("finding" if scorer_name == "includes" else "resisted")
 
 
+def test_inspect_ai_scorer_grades_inside_a_running_event_loop():
+    pytest.importorskip("inspect_ai")
+    import asyncio
+
+    from inspect_ai.dataset import Sample
+    from inspect_ai.scorer import exact
+
+    from hackfloor.adapters import InspectScorerSubject
+
+    subject = InspectScorerSubject(exact(), [Sample(input="Answer?", target="42", id="loop-1")])
+    task = subject.tasks()[0]
+
+    async def grade():
+        return subject.grade(task, "42")
+
+    attempt = asyncio.run(grade())
+    assert attempt.well_formed
+    assert attempt.reward == 1.0
+
+
+def test_inspect_ai_model_graded_scorers_are_rejected():
+    pytest.importorskip("inspect_ai")
+    from inspect_ai.dataset import Sample
+    from inspect_ai.scorer import model_graded_qa
+
+    from hackfloor.adapters import InspectScorerSubject
+
+    with pytest.raises(ValueError, match="model-graded"):
+        InspectScorerSubject(model_graded_qa(), [Sample(input="Answer?", target="42")])
+
+
 @pytest.mark.parametrize(
     ("factory", "verdict"), [("vulnerable", "VULNERABLE"), ("fixed", "RESISTED")]
 )

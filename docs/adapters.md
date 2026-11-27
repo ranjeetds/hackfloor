@@ -171,10 +171,12 @@ Every grade builds a fresh environment, calls `reset(**task_kwargs)` and one
 step is reported as an error. Environments rarely reveal the reference before a step, so you
 pass `gold(env, observation, task_kwargs)`. Multi-step environments, and environments reached over
 HTTP or in a container, are not covered yet.
+
 ### Inspect AI scorers (experimental)
 
-`InspectScorerSubject` adapts Inspect AI samples and scorers into a Hackfloor
-`CompletionSubject`. It is constructed programmatically:
+`InspectScorerSubject` adapts Inspect AI samples and scorers into a hackfloor
+`CompletionSubject`. It is built in Python; there is no `hackfloor scan` target for it yet.
+
 ```python
 from inspect_ai.dataset import Sample
 from inspect_ai.scorer import exact
@@ -198,9 +200,16 @@ print(result.verdict, result.level)
 Install with `pip install "hackfloor[inspect-ai]"`.
 
 The adapter supports model-free scorers that return numeric rewards or Inspect's
-standard Correct (`C`) and Incorrect (`I`) verdicts. Known model-graded scorers
-are rejected. Custom scorers must not require model calls; Hackfloor cannot
-automatically detect every custom scorer that invokes a model.
+standard Correct (`C`) and Incorrect (`I`) verdicts. Any other score value, including
+`P` (partial) and `N` (no answer), is reported as a grader error, so the scan is
+`INCONCLUSIVE` rather than a false `RESISTED`. Known model-graded scorers are rejected.
+Custom scorers must not require model calls; hackfloor cannot automatically detect every
+custom scorer that invokes a model.
+
+The reference answer is the sample's `target`, and the calibration run submits
+`gold_template` with `{answer}` replaced by it (default: the bare target). Scorers that
+parse a marked answer, such as `answer("line")`, need a matching template, for example
+`gold_template="ANSWER: {answer}"`; otherwise the scan reports `UNCALIBRATED`.
 
 ### OpenEnv check results
 
