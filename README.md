@@ -43,7 +43,7 @@ The same thing happens with test-based graders. These hacks are all known and ch
 | Calls `sys.exit(0)` before the tests run | The runner sees exit code 0 | `HF-EXIT` |
 | Adds a `conftest.py` that marks failures as passed | pytest reports success | `HF-CONFTEST` |
 
-hackfloor runs these and eight more against your real grader. Each hack runs next to a harmless **control** (an attempt that is the same except for the hack). If the hack scores clearly higher than the control, that is a **finding**.
+hackfloor runs these and nine more against your real grader. Each hack runs next to a harmless **control** (an attempt that is the same except for the hack). If the hack scores clearly higher than the control, that is a **finding**.
 
 ## Installation
 
