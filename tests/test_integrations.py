@@ -44,6 +44,65 @@ def test_reasoning_gym_dataset_calibrates_and_resists_task_blind_probes():
 
 
 @pytest.mark.parametrize(
+    ("scorer_name", "verdict"),
+    [("includes", "VULNERABLE"), ("exact", "RESISTED")],
+)
+def test_inspect_ai_scorer(scorer_name, verdict):
+    pytest.importorskip("inspect_ai")
+
+    from inspect_ai.dataset import Sample
+    from inspect_ai.scorer import exact, includes
+
+    from hackfloor.adapters import InspectScorerSubject
+
+    scorers = {"includes": includes, "exact": exact}
+    subject = InspectScorerSubject(
+        scorers[scorer_name](),
+        [Sample(input="What is the answer?", target="42", id="inspect-1")],
+    )
+
+    assert subject.framework == "inspect_ai"
+    task = subject.tasks()[0]
+    assert subject.grade(task, subject.gold(task)).reward == 1.0
+
+    result = scan(subject, ScanConfig(replays=1))
+    assert result.calibration.sanity == "PASS"
+    assert result.verdict == verdict
+    assert _probes(result)["HF-DUMP"] == ("finding" if scorer_name == "includes" else "resisted")
+
+
+def test_inspect_ai_scorer_grades_inside_a_running_event_loop():
+    pytest.importorskip("inspect_ai")
+    import asyncio
+
+    from inspect_ai.dataset import Sample
+    from inspect_ai.scorer import exact
+
+    from hackfloor.adapters import InspectScorerSubject
+
+    subject = InspectScorerSubject(exact(), [Sample(input="Answer?", target="42", id="loop-1")])
+    task = subject.tasks()[0]
+
+    async def grade():
+        return subject.grade(task, "42")
+
+    attempt = asyncio.run(grade())
+    assert attempt.well_formed
+    assert attempt.reward == 1.0
+
+
+def test_inspect_ai_model_graded_scorers_are_rejected():
+    pytest.importorskip("inspect_ai")
+    from inspect_ai.dataset import Sample
+    from inspect_ai.scorer import model_graded_qa
+
+    from hackfloor.adapters import InspectScorerSubject
+
+    with pytest.raises(ValueError, match="model-graded"):
+        InspectScorerSubject(model_graded_qa(), [Sample(input="Answer?", target="42")])
+
+
+@pytest.mark.parametrize(
     ("factory", "verdict"), [("vulnerable", "VULNERABLE"), ("fixed", "RESISTED")]
 )
 def test_verifiers_taskset(integration_fixtures, factory, verdict):
