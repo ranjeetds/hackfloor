@@ -8,11 +8,13 @@ the real verifiers, OpenEnv and reasoning-gym packages when they are installed.
 import math
 from types import SimpleNamespace
 
+import jsonschema
 import pytest
 
 from hackfloor import scan
 from hackfloor.adapters import CompletionSubject, OpenEnvSubject, resolve_subject
 from hackfloor.adapters.base import CompletionSubject as Base
+from hackfloor.card import build_card, card_schema
 from hackfloor.core import TaskRef
 from hackfloor.scan import ScanConfig
 
@@ -127,3 +129,16 @@ def test_subject_target(tmp_path, monkeypatch):
     assert resolve_subject("subject:my_env:build").framework == "openenv"
     with pytest.raises(ValueError, match="without a callable"):
         resolve_subject("subject:my_env:not_a_subject")
+
+
+@pytest.mark.parametrize("lenient", [True, False])
+def test_adapter_cards_validate_against_the_card_schema(lenient):
+    subject = OpenEnvSubject(
+        lambda: StandInEnv(lenient),
+        [{"index": i} for i in range(len(QUESTIONS))],
+        make_action=str,
+        gold=lambda env, obs, kwargs: env.target,
+    )
+    card = build_card(scan(subject, ScanConfig(replays=1)))
+    assert card["subject"]["framework"] == "openenv"
+    jsonschema.validate(card, card_schema())

@@ -15,7 +15,10 @@
     "subject": {
       "type": "object",
       "required": ["framework", "name"],
-      "properties": {"framework": {"enum": ["rlvr", "task"]}, "name": {"type": "string"}}
+      "properties": {
+        "framework": {"type": "string", "minLength": 1},
+        "name": {"type": "string"}
+      }
     },
     "verdict": {"enum": ["VULNERABLE", "WEAK", "RESISTED", "UNCALIBRATED", "INCONCLUSIVE"]},
     "level": {"type": ["integer", "null"], "minimum": 0, "maximum": 3},

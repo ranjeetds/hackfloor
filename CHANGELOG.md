@@ -6,6 +6,13 @@ All notable changes are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The integrity card schema listed only `rlvr` and `task` as `subject.framework`, so the cards
+  written for `reasoning-gym`, `verifiers` and `openenv` subjects (and any other adapter)
+  did not validate against the published schema. The field is now any non-empty string. Tests
+  validate an adapter card and a reasoning-gym card against the schema.
+
 ## [0.2.2] - 2026-11-27
 
 ### Fixed

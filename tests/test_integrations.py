@@ -12,7 +12,7 @@ import pytest
 
 from hackfloor import scan
 from hackfloor.adapters import resolve_subject
-from hackfloor.card import build_card
+from hackfloor.card import build_card, card_schema
 from hackfloor.export import openenv_check_results
 from hackfloor.scan import ScanConfig
 
@@ -41,6 +41,8 @@ def test_reasoning_gym_dataset_calibrates_and_resists_task_blind_probes():
     result = scan(subject, ScanConfig(replays=1))
     assert result.calibration.sanity == "PASS"
     assert result.verdict == "RESISTED"
+    jsonschema = pytest.importorskip("jsonschema")
+    jsonschema.validate(build_card(result), card_schema())
 
 
 @pytest.mark.parametrize(
