@@ -73,7 +73,7 @@ def test_openenv_subject_scan(lenient, verdict):
     assert dump.status == ("finding" if lenient else "resisted")
 
 
-def test_openenv_subject_rejects_multi_step_episodes():
+def test_openenv_subject_rejects_episode_that_exceeds_step_limit():
     class Endless(StandInEnv):
         def step(self, action):
             return SimpleNamespace(reward=1.0, done=False)
@@ -83,7 +83,7 @@ def test_openenv_subject_rejects_multi_step_episodes():
     )
     attempt = subject.grade(subject.tasks()[0], "21")
     assert not attempt.well_formed
-    assert "single-step" in attempt.error
+    assert "configured number of steps" in attempt.error
 
 
 def test_openenv_subject_without_gold_cannot_calibrate():
@@ -127,3 +127,43 @@ def test_subject_target(tmp_path, monkeypatch):
     assert resolve_subject("subject:my_env:build").framework == "openenv"
     with pytest.raises(ValueError, match="without a callable"):
         resolve_subject("subject:my_env:not_a_subject")
+
+
+@pytest.mark.parametrize(
+    ("aggregation", "expected"),
+    [("final", 0.7), ("sum", 1.2)],
+)
+def test_openenv_subject_supports_multi_step_episodes(aggregation, expected):
+    actions = []
+
+    class MultiStepEnv:
+        def reset(self, **kwargs):
+            self.step_count = 0
+            return SimpleNamespace(reward=0.0, done=False)
+
+        def step(self, action):
+            actions.append(action)
+            self.step_count += 1
+            rewards = [0.2, 0.3, 0.7]
+            return SimpleNamespace(
+                reward=rewards[self.step_count - 1],
+                done=self.step_count == 3,
+            )
+
+        def close(self):
+            pass
+
+    subject = OpenEnvSubject(
+        MultiStepEnv,
+        [{"index": 0}],
+        make_action=str,
+        steps_per_episode=3,
+        noop_action="WAIT",
+        reward_aggregation=aggregation,
+    )
+
+    attempt = subject.grade(subject.tasks()[0], "42")
+
+    assert attempt.well_formed
+    assert attempt.reward == pytest.approx(expected)
+    assert actions == ["WAIT", "WAIT", "42"]

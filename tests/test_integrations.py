@@ -115,3 +115,18 @@ def test_upstream_reasoning_gym_env(monkeypatch):
     )
     result = scan(subject, ScanConfig(replays=1))
     assert result.calibration.sanity == "PASS"
+
+
+@pytest.mark.parametrize(
+    ("factory", "verdict"),
+    [
+        ("multistep_vulnerable", "VULNERABLE"),
+        ("multistep_fixed", "RESISTED"),
+    ],
+)
+def test_openenv_multistep_environment(integration_fixtures, factory, verdict):
+    pytest.importorskip("openenv.core.env_server.interfaces")
+    subject = resolve_subject(f"subject:openenv_env:{factory}")
+    result = scan(subject, ScanConfig(replays=1))
+    assert result.calibration.sanity == "PASS"
+    assert result.verdict == verdict
