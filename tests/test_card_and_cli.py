@@ -295,3 +295,12 @@ def test_probes_listing_does_not_parse_markup(monkeypatch):
     assert main(["probes"], console=console) == 0
     assert "[/bold]" in out.getvalue()
     assert "[red]text[/red]" in out.getvalue()
+
+
+@pytest.mark.parametrize("framework", ["reasoning-gym", "verifiers", "openenv", "inspect_ai"])
+def test_card_validates_for_every_adapter_framework_name(fixtures, framework):
+    subject = resolve_subject(str(fixtures / "rlvr" / "fixed_math"))
+    subject.framework = framework
+    card = build_card(scan(subject, ScanConfig(replays=1)))
+    assert card["subject"]["framework"] == framework
+    jsonschema.validate(card, card_schema())
