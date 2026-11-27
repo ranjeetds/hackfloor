@@ -11,13 +11,65 @@ import random
 from collections.abc import Sequence
 
 
+def _betacf(a: float, b: float, x: float) -> float:
+    """Continued fraction for the incomplete beta function (modified Lentz's method)."""
+    tiny = 1e-300
+    qab, qap, qam = a + b, a + 1.0, a - 1.0
+    c = 1.0
+    d = 1.0 - qab * x / qap
+    d = 1.0 / (d if abs(d) > tiny else tiny)
+    h = d
+    for m in range(1, 100_000):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        d = 1.0 / (d if abs(d) > tiny else tiny)
+        c = 1.0 + aa / c
+        c = c if abs(c) > tiny else tiny
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        d = 1.0 / (d if abs(d) > tiny else tiny)
+        c = 1.0 + aa / c
+        c = c if abs(c) > tiny else tiny
+        delta = d * c
+        h *= delta
+        if abs(delta - 1.0) < 1e-15:
+            break
+    return h
+
+
+def betainc(a: float, b: float, x: float) -> float:
+    """The regularised incomplete beta function I_x(a, b), for a, b > 0.
+
+    It is computed with logarithms and a continued fraction, so it stays finite and fast for
+    any number of trials (an exact sum of binomial coefficients overflows a float above
+    about 1,000 trials).
+    """
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    log_front = (
+        math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b) + a * math.log(x) + b * math.log1p(-x)
+    )
+    front = math.exp(log_front)
+    if x < (a + 1.0) / (a + b + 2.0):
+        return min(1.0, front * _betacf(a, b, x) / a)
+    return max(0.0, 1.0 - front * _betacf(b, a, 1.0 - x) / b)
+
+
 def binom_sf(k: int, n: int, p: float = 0.5) -> float:
     """P(X >= k) for X ~ Binomial(n, p)."""
     if k <= 0:
         return 1.0
     if k > n:
         return 0.0
-    return min(1.0, sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k, n + 1)))
+    if p <= 0.0:
+        return 0.0
+    if p >= 1.0:
+        return 1.0
+    return betainc(k, n - k + 1, p)
 
 
 def binom_cdf(k: int, n: int, p: float) -> float:
@@ -26,7 +78,11 @@ def binom_cdf(k: int, n: int, p: float) -> float:
         return 0.0
     if k >= n:
         return 1.0
-    return min(1.0, sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(0, k + 1)))
+    if p <= 0.0:
+        return 1.0
+    if p >= 1.0:
+        return 0.0
+    return betainc(n - k, k + 1, 1.0 - p)
 
 
 def sign_test(wins: int, losses: int) -> float:
@@ -72,6 +128,13 @@ def zero_event_upper(n: int, alpha: float = 0.05) -> float:
     return 1.0 - alpha ** (1.0 / n)
 
 
+#: Up to this many tasks the bootstrap uses the same random stream as in 0.2.1, so published
+#: cards reproduce exactly. Above it a faster draw is used (see ``paired_bootstrap_ci``).
+BOOTSTRAP_EXACT_STREAM_MAX = 1000
+BOOTSTRAP_MAX_DRAWS = 20_000_000
+BOOTSTRAP_MIN_REPS = 1000
+
+
 def paired_bootstrap_ci(
     diffs: Sequence[float], *, reps: int = 2000, alpha: float = 0.05, seed: int = 0
 ) -> tuple[float, float]:
@@ -82,7 +145,13 @@ def paired_bootstrap_ci(
     if n == 1:
         return (diffs[0], diffs[0])
     rng = random.Random(seed)
-    means = sorted(sum(rng.choice(diffs) for _ in range(n)) / n for _ in range(reps))
+    if n <= BOOTSTRAP_EXACT_STREAM_MAX:
+        means = sorted(sum(rng.choice(diffs) for _ in range(n)) / n for _ in range(reps))
+    else:
+        # Large task sets: draw whole resamples at once and bound the total work, so the cost
+        # grows linearly with n instead of reps * n draws one at a time.
+        reps = max(BOOTSTRAP_MIN_REPS, min(reps, BOOTSTRAP_MAX_DRAWS // n))
+        means = sorted(sum(rng.choices(diffs, k=n)) / n for _ in range(reps))
     lo = means[math.floor(alpha / 2 * reps)]
     hi = means[min(reps - 1, math.ceil((1 - alpha / 2) * reps) - 1)]
     return (lo, hi)
@@ -108,10 +177,24 @@ def point_biserial(labels: Sequence[bool], values: Sequence[float]) -> float | N
 
 
 def auroc(labels: Sequence[bool], values: Sequence[float]) -> float | None:
-    """P(a positive outranks a negative), ties counted as one half."""
-    pos = [v for label, v in zip(labels, values, strict=True) if label]
-    neg = [v for label, v in zip(labels, values, strict=True) if not label]
-    if not pos or not neg:
+    """P(a positive outranks a negative), ties counted as one half.
+
+    Computed from ranks (the Mann-Whitney U statistic) in O(m log m) for m samples.
+    """
+    if len(labels) != len(values):
+        raise ValueError("labels and values must have the same length")
+    n_pos = sum(1 for label in labels if label)
+    n_neg = len(labels) - n_pos
+    if not n_pos or not n_neg:
         return None
-    wins = sum((p > q) + 0.5 * (p == q) for p in pos for q in neg)
-    return wins / (len(pos) * len(neg))
+    order = sorted(range(len(values)), key=values.__getitem__)
+    rank_sum = 0.0  # sum of the (average) ranks of the positives, ranks starting at 1
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and values[order[j + 1]] == values[order[i]]:
+            j += 1
+        average_rank = (i + j) / 2 + 1
+        rank_sum += average_rank * sum(1 for t in order[i : j + 1] if labels[t])
+        i = j + 1
+    return (rank_sum - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)

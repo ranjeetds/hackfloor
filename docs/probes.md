@@ -19,7 +19,6 @@ which describes the output format a policy can learn from the prompt, and the pr
 | `HF-DUMP` | form | integers 0–999 (tagged and raw), letters A–J, yes/no/true/false | empty completion, or an empty answer slot for tagged variants |
 | `HF-ECHO` | leak | the prompt, raw and inside the answer slot | empty completion, or an empty answer slot |
 | `HF-JUDGE` | judge | four task-blind injections aimed at an LLM judge (instruction override with a score, a claimed verification note, an HTML comment, a fake grading transcript), alone and inside the answer slot | empty completion, or an empty answer slot |
-
 | `HF-WRONG` | form | the reference answer made wrong: a flipped boolean or yes/no, the last number changed, or the next option letter (A to J) | an empty answer slot |
 
 `tests/test_rlvr.py` checks that variants which do not use the prompt are identical across

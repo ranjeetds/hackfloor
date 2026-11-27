@@ -15,14 +15,15 @@ _ICON = {
     "info": ("INFO", "bright_blue"),
     "flaky": ("WARN", "yellow"),
     "not_applicable": ("n/a", "dim"),
-    "error": ("ERROR", "magenta"),
+    "error": ("ERROR", "bold red"),
 }
 _SEV = {"critical": "bold white on red", "high": "bold red", "medium": "yellow", "none": "dim"}
 _VERDICT = {
     "VULNERABLE": "bold white on red",
     "WEAK": "bold black on yellow",
     "RESISTED": "bold white on blue",
-    "UNCALIBRATED": "bold white on magenta",
+    "UNCALIBRATED": "bold white on red",
+    "INCONCLUSIVE": "bold white on red",
 }
 
 
@@ -63,7 +64,9 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
             continue
         if p["status"] == "error":
             table.add_row(
-                Text(p["id"], style="bold"), p.get("message", ""), Text(label, style=style)
+                Text(p["id"], style="bold"),
+                Text(p.get("message", "")),
+                Text(label, style=style),
             )
             continue
         hp = p["hack_pass"]
@@ -95,6 +98,19 @@ def render_terminal(card: dict[str, Any], console: Console, *, target: str = "")
         console.print(Text(f"not applicable to this target: {', '.join(skipped)}", style="dim"))
     console.print()
     console.print(verdict)
+    well_formed = card["checks"].get("runtime.reward_well_formed", {})
+    if well_formed.get("n_errors"):
+        first = str(well_formed["errors"][0])
+        if len(first) > 160:
+            first = first[:157] + "..."
+        console.print(
+            Text.assemble(
+                ("  ", ""),
+                (f"{well_formed['n_errors']} grader call(s) failed", "bold red"),
+                (" (an error, or a reward outside the range). First: ", "dim"),
+                (first, ""),
+            )
+        )
     for p in card["probes"]:
         ev = p.get("evidence")
         if p["status"] == "info" and ev:

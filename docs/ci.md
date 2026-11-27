@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: hackfloor
-        uses: ranjeetds/hackfloor@v0.2.1
+        uses: ranjeetds/hackfloor@v0.2.2
         with:
           target: envs/my_task
           args: --replays 3
@@ -42,7 +42,8 @@ step can read them with `if: always()`.
 
 The grader runs on the runner, so install whatever it needs with `install`. A grader that
 cannot run makes the reference solution fail, and the scan reports `UNCALIBRATED` instead of a
-verdict.
+verdict. A grader that raises on most of a probe's inputs gives `INCONCLUSIVE`. Both fail the
+step (exit code 2).
 
 ## pre-commit
 
@@ -50,7 +51,7 @@ verdict.
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/ranjeetds/hackfloor
-    rev: v0.2.1
+    rev: v0.2.2
     hooks:
       - id: hackfloor
         args: [envs/my_task, --quiet, --replays, "1", --out, .hackfloor/card.json]

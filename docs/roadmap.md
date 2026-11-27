@@ -8,6 +8,8 @@
 - [x] **v0.2.1**: no grading of probe outputs that give the reference answer, bounded partial
   credit reported as `INFO`, the `HF-WRONG` wrong-answer probe and `semantic.canary_floor`
   (15 probes), [reasoning-gym results](results/reasoning-gym.md)
+- [x] **v0.2.2**: statistics that stay finite and fast above 1,000 tasks, `INCONCLUSIVE` when the
+  grader errors on most probe attempts, error messages printed verbatim, docs fixes
 - [ ] **v0.2.x** (Feb 2027): stable `verifiers` and OpenEnv adapters, multi-step OpenEnv
 - [ ] **v0.3** (Apr 2027): container isolation with network, timing and containment probes;
   model-based policies and a gameability gap over trained policies; judge probes against real

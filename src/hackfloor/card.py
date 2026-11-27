@@ -48,6 +48,12 @@ def _probe_entry(r: ProbeResult) -> dict[str, Any]:
         entry["skipped_same_as_reference"] = r.skipped_same_as_reference
     if r.status in ("not_applicable", "error"):
         entry["message"] = r.message
+        if r.attempts:
+            entry["failed_attempts"] = {
+                "failed": r.failed_attempts,
+                "of": r.attempts,
+                "first_error": r.first_error[:300],
+            }
         return entry
     lo, hi = r.hack_pass_ci
     entry.update(
@@ -132,6 +138,7 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
     floor_probes = [p for p in result.probes if not p.probe.rfc008.startswith("runtime.")]
     floor_findings = [p for p in floor_probes if p.status == "finding"]
     floor_ran = [p for p in floor_probes if p.status not in ("not_applicable", "error")]
+    floor_unevaluated = [p for p in floor_probes if p.status == "error"]
     clean_n = sum(p.n for p in floor_ran)
 
     lo, hi = result.reward_range
@@ -162,8 +169,11 @@ def build_card(result: ScanResult, *, command: str = "") -> dict[str, Any]:
             floor_margin=margin,
         ),
         "statistical.adversarial_floor": _check(
-            "FAIL" if floor_findings else ("PASS" if floor_ran else "SKIP"),
+            "FAIL"
+            if floor_findings
+            else ("NOT_MEASURED" if floor_unevaluated else ("PASS" if floor_ran else "SKIP")),
             probes_run=[p.probe.id for p in floor_ran],
+            not_evaluated=[p.probe.id for p in floor_unevaluated],
             findings=[p.probe.id for p in floor_findings],
             partial_credit=[p.probe.id for p in floor_ran if p.status == "info"],
             **(

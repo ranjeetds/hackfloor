@@ -45,8 +45,11 @@ The scan:
 | hack-pass | tasks where the exploit reached the reference score |
 
 The verdict is `VULNERABLE` (critical or high finding), `WEAK` (only medium findings),
-`RESISTED` (no findings) or `UNCALIBRATED` (the reference does not beat the null policy, so
-nothing can be concluded).
+`RESISTED` (no findings), `UNCALIBRATED` (the reference does not beat the null policy, so
+nothing can be concluded) or `INCONCLUSIVE` (the grader raised an error, or returned a reward
+outside the range, on most attempts of a probe, so that probe could not be evaluated and
+"no findings" would prove nothing). When some grader calls fail, the terminal prints how many
+and shows the first error.
 
 ## Exit codes
 
@@ -54,7 +57,7 @@ nothing can be concluded).
 |---|---|
 | 0 | no finding at or above `--fail-on` (default `high`) |
 | 1 | at least one finding at or above `--fail-on` |
-| 2 | uncalibrated, or the target could not be loaded |
+| 2 | uncalibrated or inconclusive, or the target could not be loaded |
 
 ## Useful options
 
