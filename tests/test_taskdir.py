@@ -89,7 +89,8 @@ def test_failed_setup_is_an_error_not_a_reward(tmp_path, fixtures):
     shutil.copytree(fixtures / "tasks" / "fixed_script", task)
     config = (task / "hackfloor.toml").read_text()
     config = config.replace(
-        'entry_functions = ["slugify"]', 'entry_functions = ["slugify"]\nsetup = ["false"]'
+        'entry_functions = ["slugify"]',
+        'entry_functions = ["slugify"]\nsetup = ["{python}", "-c", "import sys; sys.exit(1)"]',
     )
     (task / "hackfloor.toml").write_text(config)
     subject = resolve_subject(str(task))

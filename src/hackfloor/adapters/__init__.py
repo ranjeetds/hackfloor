@@ -13,6 +13,7 @@ from hackfloor.core import Subject
 
 __all__ = [
     "CompletionSubject",
+    "InspectScorerSubject",
     "OpenEnvSubject",
     "ReasoningGymSubject",
     "RewardFunctionSubject",
@@ -31,6 +32,10 @@ def __getattr__(name: str) -> Any:
         from hackfloor.adapters.reasoning_gym import ReasoningGymSubject
 
         return ReasoningGymSubject
+    if name == "InspectScorerSubject":
+        from hackfloor.adapters.inspect_ai import InspectScorerSubject
+
+        return InspectScorerSubject
     if name == "VerifiersSubject":
         from hackfloor.adapters.verifiers import VerifiersSubject
 

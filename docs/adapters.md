@@ -24,7 +24,8 @@ An adapter turns an environment into a `Subject` (see `src/hackfloor/core.py`):
 | OpenEnv `Environment` (single step, in process) | experimental | `subject:<module:factory>`; tested against openenv 0.15.0, including its `reasoning_gym_env` |
 | OpenEnv RFC 008 `CheckResult` export | stable | `--openenv-checks checks.json`; validated against openenv 0.15.0's schema |
 | GitHub Action, pre-commit hook, pytest fixture | stable | see [CI](ci.md) |
-| OpenRLHF, inspect_ai scorers, multi-step and HTTP OpenEnv | planned | |
+| OpenRLHF, multi-step and HTTP OpenEnv | planned | |
+| Inspect AI scorers | experimental | Python API; model-free scorers only |
 
 ## Reward functions
 
@@ -103,15 +104,17 @@ Two optional `[task]` keys model what an image build would do:
 ## Framework adapters
 
 Install the framework with its extra (`pip install "hackfloor[reasoning-gym]"`,
-`"hackfloor[verifiers]"`, `"hackfloor[openenv]"`, or `"hackfloor[integrations]"` for all
-three). Each adapter calls the framework's own scoring code; hackfloor never reimplements a
-grader. All three grade one completion per task, so the completion probes apply.
+`"hackfloor[verifiers]"`, `"hackfloor[openenv]"`, or `"hackfloor[inspect-ai]"`).
+Use `"hackfloor[integrations]"` to install all integration dependencies.
+Each adapter calls the framework's own scoring code; hackfloor never reimplements a
+grader. These adapters grade one completion per task, so the completion probes apply.
 
 | Target | Adapter | Status |
 |---|---|---|
 | `reasoning-gym:<dataset>` | `ReasoningGymSubject` | tested against reasoning-gym 0.1.25 |
 | `verifiers:<module:factory>` | `VerifiersSubject` | experimental; tested against verifiers 0.4.1 (v1 API) |
 | `subject:<module:factory>` | any `Subject`, for example `OpenEnvSubject` | experimental; tested against openenv 0.15.0 |
+| `InspectScorerSubject` | `InspectScorerSubject` | experimental; tested against inspect-ai 0.3.292 |
 
 ### reasoning-gym
 
@@ -168,6 +171,36 @@ Every grade builds a fresh environment, calls `reset(**task_kwargs)` and one
 step is reported as an error. Environments rarely reveal the reference before a step, so you
 pass `gold(env, observation, task_kwargs)`. Multi-step environments, and environments reached over
 HTTP or in a container, are not covered yet.
+### Inspect AI scorers (experimental)
+
+`InspectScorerSubject` adapts Inspect AI samples and scorers into a Hackfloor
+`CompletionSubject`. It is constructed programmatically:
+```python
+from inspect_ai.dataset import Sample
+from inspect_ai.scorer import exact
+
+from hackfloor import scan
+from hackfloor.adapters import InspectScorerSubject
+
+samples = [
+    Sample(input="What is 2 + 2?", target="4", id="addition"),
+]
+
+subject = InspectScorerSubject(
+    scorer=exact(),
+    samples=samples,
+)
+
+result = scan(subject)
+print(result.verdict, result.level)
+```
+
+Install with `pip install "hackfloor[inspect-ai]"`.
+
+The adapter supports model-free scorers that return numeric rewards or Inspect's
+standard Correct (`C`) and Incorrect (`I`) verdicts. Known model-graded scorers
+are rejected. Custom scorers must not require model calls; Hackfloor cannot
+automatically detect every custom scorer that invokes a model.
 
 ### OpenEnv check results
 
@@ -180,5 +213,4 @@ This writes the card's RFC 008 checks as OpenEnv `CheckResult` records (`check_i
 `report-v2.schema.json` from openenv 0.15.0. Checks hackfloor does not measure are written as
 `skip` with the reason. An uncalibrated scan writes `skip` for every check.
 
-Planned: native Harbor `task.toml`, multi-step and HTTP OpenEnv environments, OpenRLHF and
-inspect_ai.
+Planned: native Harbor `task.toml`, multi-step and HTTP OpenEnv environments, and OpenRLHF.

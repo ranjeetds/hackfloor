@@ -45,7 +45,7 @@ jobs:
             echo "expected the vulnerable fixture to fail the scan" && exit 1
           fi
   integrations:
-    # Adapters against the real verifiers, OpenEnv and reasoning-gym packages.
+    # Adapters against the real verifiers, OpenEnv, reasoning-gym and Inspect AI packages.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
