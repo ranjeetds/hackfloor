@@ -63,3 +63,36 @@ def vulnerable() -> OpenEnvSubject:
 
 def fixed() -> OpenEnvSubject:
     return _subject(False)
+
+
+class MultiStepMathEnv(MathEnv):
+    def step(self, action, timeout_s=None, **kwargs):
+        self._state.step_count += 1
+
+        if self._state.step_count < 3:
+            return MathObservation(question=None, reward=0.0, done=False)
+
+        reply = action.answer.strip()
+        ok = self.target in reply if self.lenient else reply == self.target
+        return MathObservation(question=None, reward=float(ok), done=True)
+
+
+def _multistep_subject(lenient: bool) -> OpenEnvSubject:
+    return OpenEnvSubject(
+        lambda: MultiStepMathEnv(lenient=lenient),
+        [{"index": i} for i in range(len(QUESTIONS))],
+        make_action=lambda text: AnswerAction(answer=text),
+        gold=lambda env, obs, kwargs: env.target,
+        name="openenv-multistep-lenient" if lenient else "openenv-multistep-exact",
+        steps_per_episode=3,
+        noop_action="WAIT",
+        reward_aggregation="final",
+    )
+
+
+def multistep_vulnerable() -> OpenEnvSubject:
+    return _multistep_subject(True)
+
+
+def multistep_fixed() -> OpenEnvSubject:
+    return _multistep_subject(False)
