@@ -1,5 +1,18 @@
+"""Adapter for OpenEnv environments (``openenv.core.env_server.interfaces``).
 
-"""Adapter for single-step and scripted multi-step OpenEnv environments."""
+Experimental. Each grade builds a fresh environment from ``env_factory``, calls
+``reset(**task_kwargs)``, then ``step(make_action(action))`` once, or, for a scripted
+multi-step episode (``steps_per_episode > 1``), ``steps_per_episode - 1`` times with the
+caller's ``noop_action`` followed by one step with the completion. The reward is read from
+the returned observation (``obs.reward``), or from the step result when it carries one.
+``reward_aggregation`` is ``"final"`` (the last step's reward) or ``"sum"`` (all steps; a
+step that returns no reward before the last counts as 0). Environments reached over HTTP
+or in a container are out of scope for this adapter.
+
+OpenEnv environments usually do not reveal the reference before a step, so the caller
+supplies ``gold(env, observation, task_kwargs) -> str`` (for example, reading the entry the
+environment just drew).
+"""
 
 from __future__ import annotations
 
@@ -90,43 +103,31 @@ class OpenEnvSubject(CompletionSubject):
     def score(self, task: TaskRef, completion: str) -> float:
         env = self.env_factory()
         rewards: list[float] = []
-
+        last = self.steps_per_episode - 1
         try:
             env.reset(**self.task_kwargs[task.meta["index"]])
-
-            actions = [self.noop_action] * (self.steps_per_episode - 1) + [completion]
-
+            actions = [self.noop_action] * last + [completion]
             for index, action in enumerate(actions):
                 result = env.step(self.make_action(action))
-                obs = getattr(result, "observation", result)
-
-                reward = getattr(obs, "reward", None)
+                obs = getattr(result, "observation", None)
+                reward = getattr(result, "reward", None)
+                if reward is None and obs is not None:  # a client StepResult
+                    reward = getattr(obs, "reward", None)
                 if reward is None:
-                    if self.reward_aggregation == "sum" or index == len(actions) - 1:
+                    if index == last:
                         raise ValueError("the step returned no reward")
-                else:
-                    rewards.append(float(reward))
-
+                    reward = 0.0  # intermediate steps often carry no reward
+                rewards.append(float(reward))
                 done = getattr(result, "done", getattr(obs, "done", True))
-
                 if done:
-                    if index != len(actions) - 1:
-                        raise ValueError(
-                            "the episode ended before the completion action"
-                        )
+                    if index != last:
+                        raise ValueError("the episode ended before the completion action")
                     break
             else:
-                raise ValueError(
-                    "the episode did not end after the configured number of steps"
-                )
-
+                raise ValueError("the episode did not end after the configured number of steps")
         finally:
             self._close(env)
-
-        if self.reward_aggregation == "sum":
-            return sum(rewards)
-
-        return rewards[-1]
+        return sum(rewards) if self.reward_aggregation == "sum" else rewards[-1]
 
     def describe(self) -> dict[str, Any]:
         return {

@@ -21,7 +21,7 @@ An adapter turns an environment into a `Subject` (see `src/hackfloor/core.py`):
 | Harbor-style task directories | stable | `hackfloor.toml` beside the task; native `task.toml` reading is planned |
 | reasoning-gym | stable | `hackfloor scan reasoning-gym:<dataset>`; tested against 0.1.25 |
 | Prime Intellect `verifiers` (v1 API) | experimental | `hackfloor scan verifiers:<module:factory>`; trace-level rewards only; tested against 0.4.1 |
-| OpenEnv `Environment` (single step, in process) | experimental | `subject:<module:factory>`; tested against openenv 0.15.0, including its `reasoning_gym_env` |
+| OpenEnv `Environment` (single step or scripted multi-step, in process) | experimental | `subject:<module:factory>`; tested against openenv 0.15.0, including its `reasoning_gym_env` |
 | OpenEnv RFC 008 `CheckResult` export | stable | `--openenv-checks checks.json`; validated against openenv 0.15.0's schema |
 | GitHub Action, pre-commit hook, pytest fixture | stable | see [CI](ci.md) |
 | OpenRLHF, inspect_ai scorers, multi-step and HTTP OpenEnv | planned | |
@@ -166,8 +166,33 @@ hackfloor scan subject:my_scan:build
 Every grade builds a fresh environment, calls `reset(**task_kwargs)` and one
 `step(make_action(completion))`, and reads `obs.reward`. An episode that does not end after one
 step is reported as an error. Environments rarely reveal the reference before a step, so you
-pass `gold(env, observation, task_kwargs)`. Multi-step environments, and environments reached over
-HTTP or in a container, are not covered yet.
+pass `gold(env, observation, task_kwargs)`. Environments reached over HTTP or in a container are
+not covered yet.
+
+#### Multi-step episodes
+
+For an environment that needs several steps, pass `steps_per_episode` and a `noop_action`:
+
+```python
+OpenEnvSubject(
+    MyEnvironment,
+    tasks,
+    make_action=lambda text: MyAction(text=text),
+    gold=lambda env, obs, kwargs: env.target,
+    steps_per_episode=3,
+    noop_action="WAIT",
+    reward_aggregation="final",
+)
+```
+
+Each grade sends `steps_per_episode - 1` steps with `noop_action`, then one step with the
+probe's completion, so the completion probes act on the final step. The episode must end on
+that last step; one that ends earlier or later is reported as an error. With
+`reward_aggregation="final"` (the default) the score is the last step's reward. With `"sum"` it
+is the total of all steps, and a step before the last that returns no reward counts as 0; set
+`reward_max` to the largest possible total, and note that shaping rewards on the no-op steps
+then raise the null policy's score (calibration still compares the reference with it).
+`steps_per_episode=1`, the default, behaves as before.
 
 ### OpenEnv check results
 
