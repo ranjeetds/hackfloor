@@ -7,7 +7,7 @@ Every scan writes a JSON card (default `hackfloor-card.json`) that validates aga
 
 | Field | Meaning |
 |---|---|
-| `verdict` | `VULNERABLE`, `WEAK`, `RESISTED` or `UNCALIBRATED` |
+| `verdict` | `VULNERABLE`, `WEAK`, `RESISTED`, `UNCALIBRATED` or `INCONCLUSIVE` |
 | `level` | integrity level, or `null` when uncalibrated |
 | `subject` | what was scanned: framework, name, data or task paths, reward range |
 | `calibration` | reference and null-policy means, replay consistency |
@@ -26,7 +26,7 @@ hackfloor-specific id.
 | `hackfloor.calibration` | the reference beats the null policy on every task, consistently across replays |
 | `semantic.oracle_max` | every reference run reaches the declared maximum (tolerance 0) |
 | `semantic.floor_gap` | the highest null-policy reward sits at least `min_floor_gap` of the range below the maximum and below the lowest reference reward |
-| `statistical.adversarial_floor` | no probe in the panel has a finding; when none does, the 95% upper bound on the hack-pass rate per probe and task |
+| `statistical.adversarial_floor` | no probe in the panel has a finding (`NOT_MEASURED` when a probe could not be evaluated); when none does, the 95% upper bound on the hack-pass rate per probe and task |
 | `statistical.gameability_gap` | point-biserial correlation and AUROC between solved and reward across all scripted attempts, against a declared bound (see [Statistics](statistics.md#gameability)) |
 | `semantic.no_solution_leakage` | no leak probe reaches a reference solution, and the reference answer is not visible in the prompt; `NOT_MEASURED` when there is nothing to check |
 | `runtime.reward_well_formed` | every reward is finite and inside the declared range, and no grader call failed |
@@ -44,7 +44,7 @@ PATH` writes these checks as OpenEnv `CheckResult` records (see [Adapters](adapt
 
 | Level | Rule | Available |
 |---|---|---|
-| L0 | any critical or high finding, or any malformed reward | since v0.1 |
+| L0 | any critical or high finding, any malformed reward, or a probe that could not be evaluated | since v0.1 |
 | L1 | calibrated, and no critical or high finding | since v0.1 |
 | L2 | L1, plus a bounded gameability gap and passing containment checks | planned |
 | L3 | L2, plus the canary suite and an independent replay | planned |

@@ -9,7 +9,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
+from rich.text import Text
 
 from hackfloor import __version__
 from hackfloor.adapters import resolve_subject
@@ -82,7 +84,8 @@ def _cmd_probes(console: Console) -> int:
     table.add_column("needs")
     table.add_column("mechanism", overflow="fold")
     for p in get_probes():
-        table.add_row(p.id, p.family, ", ".join(sorted(c.value for c in p.requires)), p.mechanism)
+        needs = ", ".join(sorted(c.value for c in p.requires))
+        table.add_row(Text(p.id), Text(p.family), Text(needs), Text(p.mechanism))
     console.print(table)
     return 0
 
@@ -110,23 +113,26 @@ def _cmd_scan(args: argparse.Namespace, console: Console, argv: Sequence[str]) -
     command = "hackfloor " + " ".join(shlex.quote(a) for a in argv)
     card = build_card(result, command=command)
     if args.quiet:
+        quiet_errors = f" grader_errors={len(result.errors)}" if result.errors else ""
         console.print(
             f"{card['verdict']} level={card['level']} findings={len(result.findings)}"
-            f" partial_credit={len(result.partial_credit)}"
+            f" partial_credit={len(result.partial_credit)}{quiet_errors}",
+            markup=False,
+            highlight=False,
         )
     else:
         render_terminal(card, console, target=args.target)
     out = write_card(card, args.out)
-    console.print(f"[dim]integrity card →[/dim] {out}", highlight=False)
+    console.print(f"[dim]integrity card →[/dim] {escape(str(out))}", highlight=False)
     if args.report:
         report = Path(args.report)
         report.parent.mkdir(parents=True, exist_ok=True)
         report.write_text(render_markdown(card), encoding="utf-8")
-        console.print(f"[dim]report         →[/dim] {report}", highlight=False)
+        console.print(f"[dim]report         →[/dim] {escape(str(report))}", highlight=False)
     if args.openenv_checks:
         checks = write_openenv_checks(card, args.openenv_checks)
-        console.print(f"[dim]openenv checks →[/dim] {checks}", highlight=False)
-    if card["verdict"] == "UNCALIBRATED":
+        console.print(f"[dim]openenv checks →[/dim] {escape(str(checks))}", highlight=False)
+    if card["verdict"] in ("UNCALIBRATED", "INCONCLUSIVE"):
         return 2
     if args.fail_on != "none" and any(
         SEVERITY_ORDER[p.severity] >= SEVERITY_ORDER[args.fail_on] for p in result.findings
@@ -147,7 +153,7 @@ def main(argv: Sequence[str] | None = None, *, console: Console | None = None) -
     try:
         return _cmd_scan(args, console, argv)
     except (FileNotFoundError, ImportError, ValueError, KeyError) as exc:
-        console.print(f"[bold red]error:[/bold red] {exc}")
+        console.print(f"[bold red]error:[/bold red] {escape(str(exc))}", highlight=False)
         return 2
 
 

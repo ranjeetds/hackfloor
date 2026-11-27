@@ -42,7 +42,8 @@ step can read them with `if: always()`.
 
 The grader runs on the runner, so install whatever it needs with `install`. A grader that
 cannot run makes the reference solution fail, and the scan reports `UNCALIBRATED` instead of a
-verdict.
+verdict. A grader that raises on most of a probe's inputs gives `INCONCLUSIVE`. Both fail the
+step (exit code 2).
 
 ## pre-commit
 
